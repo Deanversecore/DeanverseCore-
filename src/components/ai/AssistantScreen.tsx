@@ -151,9 +151,11 @@ export function AssistantScreen() {
             <p className="admin-heading-serif truncate text-[0.9375rem] text-white">DeanVerse AI</p>
             <p className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-white/40">
               <span className="h-1.5 w-1.5 rounded-full bg-[#6f8f72]" />
-              {handsFreeEnabled && spokenRepliesEnabled
-                ? "Hands-free conversation"
-                : "Connected to your workspace"}
+              {spokenRepliesEnabled
+                ? handsFreeEnabled
+                  ? "Hands-free conversation"
+                  : "Speaking replies"
+                : "Replies are muted"}
             </p>
           </div>
         </div>
