@@ -72,7 +72,7 @@ test("recognises the planning and review questions", () => {
     ["What's important today?", "whats_important"],
     ["What am I forgetting?", "forgetting"],
     ["What should I do next?", "next_action"],
-    ["Who do I need to follow up with?", "follow_ups"],
+    ["Who's waiting on me?", "follow_ups"],
     ["Summarize everything I need to know.", "summary"],
   ];
   for (const [utterance, expected] of cases) {

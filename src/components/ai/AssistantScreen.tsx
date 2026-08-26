@@ -210,11 +210,15 @@ export function AssistantScreen() {
             <p className="admin-heading-serif truncate text-[0.9375rem] text-white">DeanVerse</p>
             <p className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-white/40">
               <span className="h-1.5 w-1.5 rounded-full bg-[#6f8f72]" />
-              {spokenRepliesEnabled
-                ? handsFreeEnabled
-                  ? "Talking with you"
-                  : "I'll speak my answers"
-                : "Voice is muted"}
+              {listening
+                ? "Listening"
+                : thinking
+                  ? "Thinking"
+                  : speaking
+                    ? "Speaking"
+                    : spokenRepliesEnabled
+                      ? "I'm here"
+                      : "Voice is muted"}
             </p>
           </div>
         </div>

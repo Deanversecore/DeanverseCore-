@@ -16,7 +16,7 @@ export function SubPage({ eyebrow, title, action, children }: SubPageProps) {
   const router = useRouter();
 
   return (
-    <div className="pb-8">
+    <div className="pb-12">
       <header className="app-topbar sticky top-0 z-20 flex items-center gap-3 px-3 py-3">
         <button
           type="button"

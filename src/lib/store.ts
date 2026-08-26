@@ -380,7 +380,11 @@ export const useStore = create<StoreState>()(
         messages: state.messages,
         dismissedInsights: state.dismissedInsights,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          useStore.getState().setHydrated();
+          return;
+        }
         state?.setHydrated();
       },
     },

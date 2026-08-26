@@ -133,7 +133,7 @@ export function interpret(input: string, now: Date = new Date()): Intent {
   if (/\bwhat should i do next\b|\bwhat('?s| is) next\b|\bnext (thing|task|action|up)\b|\bwhere do i start\b/.test(lower)) {
     return { type: "next_action" };
   }
-  if (/\bfollow(-| )?ups?\b|\bwho do i need to\b|\bwho should i (call|email|contact|reach)\b|\bchase\b/.test(lower)) {
+  if (/\bfollow(-| )?ups?\b|\bwho do i need to\b|\bwho('?s| is) waiting\b|\bwho should i (call|email|contact|reach)\b|\bchase\b/.test(lower)) {
     return { type: "follow_ups" };
   }
   if (/\bsummar(y|ize|ise)\b|\bbrief me\b|\bcatch me up\b|\beverything i need to know\b|\brundown\b/.test(lower)) {

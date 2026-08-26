@@ -38,6 +38,9 @@ export function Onboarding() {
       timezoneLabel: timezone,
       workdayStartHour: startHour,
       workdayEndHour: endHour,
+      spokenRepliesEnabled: true,
+      handsFreeEnabled: true,
+      voiceEnabled: true,
       onboardedAt: new Date().toISOString(),
     });
   };

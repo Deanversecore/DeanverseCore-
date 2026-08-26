@@ -49,7 +49,7 @@ export interface AssistantResult {
 const DEFAULT_SUGGESTIONS = [
   "Plan my day",
   "What am I forgetting?",
-  "Who do I need to follow up with?",
+  "Who's waiting on me?",
   "Summarize everything I need to know",
 ];
 
@@ -236,7 +236,7 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
             detail: followUp.context,
           },
         ],
-        suggestions: ["Who do I need to follow up with?"],
+        suggestions: ["Who's waiting on me?"],
       });
     }
 
@@ -452,7 +452,7 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
       const action = nextBestAction(data, now);
       parts.push(`If you only do one thing: ${action.headline.toLowerCase()}.`);
 
-      return result({ text: parts.join(" "), suggestions: ["Plan my day", "Who do I need to follow up with?"] });
+      return result({ text: parts.join(" "), suggestions: ["Plan my day", "Who's waiting on me?"] });
     }
 
     case "recall": {

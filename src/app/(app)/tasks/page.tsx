@@ -138,7 +138,7 @@ export default function TasksPage() {
           setComposerOpen(true);
         }}
         aria-label="Add a task"
-        className="fixed bottom-[calc(var(--app-bottomnav-height)+5rem)] right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 text-white/80"
+        className="fixed bottom-[calc(var(--app-bottomnav-height)+1rem)] right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 text-white/80"
         style={{ background: "#12211ce6", boxShadow: "var(--admin-elev-2)", backdropFilter: "blur(12px)" }}
       >
         <Plus size={20} />
