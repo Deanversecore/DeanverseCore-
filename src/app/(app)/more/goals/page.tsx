@@ -203,7 +203,7 @@ export default function GoalsPage() {
               className="admin-input"
               value={title}
               autoFocus
-              placeholder="Ship five client sites this quarter"
+              placeholder="Ship five sites this quarter"
               onChange={(event) => setTitle(event.target.value)}
             />
           </div>

@@ -82,7 +82,7 @@ export default function FollowUpsPage() {
         <EmptyState
           icon={<Users size={22} />}
           title="Nobody's waiting"
-          body="Say “follow up with Maria about the brand assets” and the assistant tracks it until it's closed."
+          body="Say “follow up with the client about the brand assets” and the assistant tracks it until it's closed."
           action={
             <button type="button" onClick={() => setOpen(true)} className="admin-btn-gold">
               <Plus size={15} />
@@ -173,7 +173,7 @@ export default function FollowUpsPage() {
               className="admin-input"
               value={person}
               autoFocus
-              placeholder="Maria"
+              placeholder="Name"
               onChange={(event) => setPerson(event.target.value)}
             />
           </div>

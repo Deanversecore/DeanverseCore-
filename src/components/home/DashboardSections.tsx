@@ -95,7 +95,7 @@ export function ScheduleSection({ data, now }: { data: AppData; now: Date }) {
           <EmptyState
             icon={<CalendarPlus size={22} />}
             title="Your calendar is open"
-            body="Nothing scheduled ahead. Say “schedule a call with Maria tomorrow at 2pm” and I'll add it."
+            body="Nothing scheduled ahead. Say “schedule a call tomorrow at 2pm” and I'll add it."
           />
         </Panel>
       ) : (

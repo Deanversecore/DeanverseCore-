@@ -208,7 +208,7 @@ function EventComposer({ open, onClose, day }: { open: boolean; onClose: () => v
             className="admin-input"
             value={title}
             autoFocus
-            placeholder="Design review with Outlaw Tattoo"
+            placeholder="Design review"
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>

@@ -254,7 +254,7 @@ export function AssistantScreen() {
 
 function ConversationIntro() {
   const examples = [
-    "Remind me tomorrow to call John",
+    "Remind me tomorrow to send the invoice",
     "Remember that this project is due Friday",
     "What am I forgetting?",
     "Help me organize my week",
