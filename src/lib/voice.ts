@@ -85,9 +85,55 @@ export function startDictation(handlers: VoiceHandlers): (() => void) | null {
 
 const speechListeners = new Set<() => void>();
 let speakingId: string | null = null;
-let activeAudio: HTMLAudioElement | null = null;
+let player: HTMLAudioElement | null = null;
 let serverVoice: boolean | null = null;
 let watchdog: number | undefined;
+let audioUnlocked = false;
+let unlockGeneration = 0;
+
+const SILENT_WAV =
+  "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+
+function getPlayer(): HTMLAudioElement {
+  if (!player) {
+    player = new Audio();
+    player.preload = "auto";
+  }
+  return player;
+}
+
+/**
+ * Browsers drop the user-gesture token once we await the reply, which would
+ * otherwise block auto-played spoken replies. Warm the same Audio element
+ * during the tap so later playback is allowed.
+ */
+export function unlockAudioPlayback() {
+  if (typeof window === "undefined" || audioUnlocked) return;
+  const audio = getPlayer();
+  const token = ++unlockGeneration;
+  audio.muted = true;
+  audio.src = SILENT_WAV;
+  void audio
+    .play()
+    .then(() => {
+      audioUnlocked = true;
+      if (token !== unlockGeneration || audio.src !== SILENT_WAV) {
+        audio.muted = false;
+        return;
+      }
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = false;
+    })
+    .catch(() => {
+      audio.muted = false;
+    });
+}
+
+/** Ask the server whether a voice is configured, so the first reply isn't delayed. */
+export function primeSpeech() {
+  void hasServerVoice();
+}
 
 function notifySpeech() {
   for (const listener of speechListeners) listener();
@@ -112,6 +158,11 @@ export function getSpeakingId(): string | null {
 
 export function isSpeechOutputSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
+/** Server audio works even when the device has no speech engine of its own. */
+export function canSpeakOutLoud(): boolean {
+  return typeof window !== "undefined";
 }
 
 /** Voices the device can use, once the browser has finished loading them. */
@@ -144,12 +195,13 @@ export function stopSpeaking() {
   if (typeof window === "undefined") return;
   window.clearInterval(watchdog);
   watchdog = undefined;
-  if (activeAudio) {
-    activeAudio.onended = null;
-    activeAudio.onerror = null;
-    activeAudio.pause();
-    URL.revokeObjectURL(activeAudio.src);
-    activeAudio = null;
+  if (player && (speakingId || player.src.startsWith("blob:"))) {
+    player.onended = null;
+    player.onerror = null;
+    player.pause();
+    if (player.src.startsWith("blob:")) URL.revokeObjectURL(player.src);
+    player.removeAttribute("src");
+    player.load();
   }
   if (isSpeechOutputSupported()) window.speechSynthesis.cancel();
   setSpeaking(null);
@@ -186,12 +238,15 @@ async function speakOnServer(id: string, text: string, onDone: () => void): Prom
       return true;
     }
 
-    const audio = new Audio(url);
-    activeAudio = audio;
+    const audio = getPlayer();
+    unlockGeneration += 1;
+    audio.muted = false;
+    audio.src = url;
     const finish = () => {
-      if (activeAudio === audio) {
+      if (player === audio && audio.src === url) {
         URL.revokeObjectURL(url);
-        activeAudio = null;
+        audio.onended = null;
+        audio.onerror = null;
         setSpeaking(null);
         onDone();
       }

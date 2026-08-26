@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowUp, Mic, Square } from "lucide-react";
-import { isVoiceSupported, startDictation } from "@/lib/voice";
+import { isVoiceSupported, startDictation, unlockAudioPlayback } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { cx } from "@/components/ui/Primitives";
 
@@ -61,6 +61,7 @@ export function Composer({
       return;
     }
     haptic("select");
+    unlockAudioPlayback();
     const stop = startDictation({
       onPartial: onChange,
       onFinal: (transcript) => {

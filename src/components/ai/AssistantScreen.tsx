@@ -10,7 +10,7 @@ import { createId } from "@/lib/id";
 import { respond, DEFAULT_SUGGESTIONS } from "@/lib/ai/engine";
 import { interpret } from "@/lib/ai/nlu";
 import { enhanceReply } from "@/lib/ai/client";
-import { isSpeechOutputSupported, speak, stopSpeaking } from "@/lib/voice";
+import { canSpeakOutLoud, primeSpeech, speak, stopSpeaking, unlockAudioPlayback } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { MessageBubble, ThinkingBubble } from "@/components/ai/MessageBubble";
 import { Composer } from "@/components/ai/Composer";
@@ -41,13 +41,14 @@ export function AssistantScreen() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const handledDeepLink = useRef(false);
 
-  const speechReady = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
+  const speechReady = useSyncExternalStore(noopSubscribe, canSpeakOutLoud, returnFalse);
 
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
 
+      unlockAudioPlayback();
       stopSpeaking();
 
       const now = new Date();
@@ -100,7 +101,10 @@ export function AssistantScreen() {
     [appendMessage, applyEffects],
   );
 
-  useEffect(() => () => stopSpeaking(), []);
+  useEffect(() => {
+    primeSpeech();
+    return () => stopSpeaking();
+  }, []);
 
   /* A question passed in the URL is answered as soon as the workspace is ready. */
   useEffect(() => {
@@ -159,6 +163,7 @@ export function AssistantScreen() {
             type="button"
             onClick={() => {
               haptic("select");
+              unlockAudioPlayback();
               if (spokenRepliesEnabled) stopSpeaking();
               updateProfile({ spokenRepliesEnabled: !spokenRepliesEnabled });
             }}

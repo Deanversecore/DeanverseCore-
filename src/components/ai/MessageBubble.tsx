@@ -16,11 +16,12 @@ import {
 import type { ActionReceipt, ChatMessage, EntityKind } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import {
+  canSpeakOutLoud,
   getSpeakingId,
-  isSpeechOutputSupported,
   speak,
   stopSpeaking,
   subscribeSpeech,
+  unlockAudioPlayback,
 } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { LogoMark } from "@/components/ui/Logo";
@@ -167,7 +168,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
 /** Replays any answer out loud, whether or not spoken replies are on. */
 function PlaybackButton({ message }: { message: ChatMessage }) {
   const voiceURI = useStore((state) => state.profile.voiceURI);
-  const supported = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
+  const supported = useSyncExternalStore(noopSubscribe, canSpeakOutLoud, returnFalse);
   const speakingId = useSyncExternalStore(subscribeSpeech, getSpeakingId, returnNull);
 
   if (!supported) return null;
@@ -178,6 +179,7 @@ function PlaybackButton({ message }: { message: ChatMessage }) {
       type="button"
       onClick={() => {
         haptic("tap");
+        unlockAudioPlayback();
         if (speaking) stopSpeaking();
         else void speak(message.id, message.content, { voiceURI });
       }}

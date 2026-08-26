@@ -7,11 +7,12 @@ import { useMounted } from "@/lib/hooks";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { pushWorkspace, signInWithEmail, signOut } from "@/lib/supabase/sync";
 import {
-  isSpeechOutputSupported,
+  canSpeakOutLoud,
   listVoices,
   speak,
   stopSpeaking,
   subscribeVoices,
+  unlockAudioPlayback,
 } from "@/lib/voice";
 import { formatClock } from "@/lib/date";
 import { Eyebrow, Panel, Skeleton, cx } from "@/components/ui/Primitives";
@@ -274,18 +275,17 @@ function syncLabel(status: SyncStatus, lastSyncedAt: string | null, message: str
 function VoicePanel() {
   const profile = useStore((state) => state.profile);
   const updateProfile = useStore((state) => state.updateProfile);
-  const supported = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
+  const supported = useSyncExternalStore(noopSubscribe, canSpeakOutLoud, returnFalse);
   const [voices, setVoices] = useState<{ uri: string; label: string }[]>([]);
 
   useEffect(() => {
-    if (!supported) return;
     const read = () =>
       setVoices(
         listVoices().map((voice) => ({ uri: voice.voiceURI, label: `${voice.name} (${voice.lang})` })),
       );
     read();
     return subscribeVoices(read);
-  }, [supported]);
+  }, []);
 
   useEffect(() => () => stopSpeaking(), []);
 
@@ -342,6 +342,7 @@ function VoicePanel() {
         type="button"
         onClick={() => {
           haptic("tap");
+          unlockAudioPlayback();
           void speak(
             "settings-preview",
             `Hello ${profile.name || "there"}. This is how I'll sound when I read your day back to you.`,
