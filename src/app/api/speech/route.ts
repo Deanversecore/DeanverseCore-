@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         input: text.slice(0, MAX_CHARACTERS),
         response_format: "mp3",
         instructions:
-          "Speak like a calm, competent executive assistant: measured pace, warm, no theatrics.",
+          "Speak like a real person in the room, not a narrator. Warm, present, conversational. Natural pace with slight energy. Never sound like you are reading a document.",
       }),
     });
 

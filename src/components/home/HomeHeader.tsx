@@ -34,7 +34,14 @@ export function HomeHeader({ name, now }: { name: string; now: Date }) {
         className="mt-6"
       >
         <h1 className="admin-heading-serif text-[1.75rem] text-white">
-          {greetingFor(now)}, <span className="text-gold-gradient">{name}</span>
+          {greetingFor(now)}
+          {name.trim() ? (
+            <>
+              , <span className="text-gold-gradient">{name.trim()}</span>
+            </>
+          ) : (
+            "."
+          )}
         </h1>
         <p className="mt-1.5 text-[0.8125rem] text-[color:var(--admin-text-muted)]">
           {formatLongDate(now)} · <span className="tabular">{formatClock(now)}</span>

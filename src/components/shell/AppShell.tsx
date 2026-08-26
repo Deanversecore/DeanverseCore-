@@ -10,6 +10,7 @@ import { Onboarding } from "@/components/shell/Onboarding";
 import { useStore } from "@/lib/store";
 import { useCloudSync } from "@/lib/supabase/useCloudSync";
 import { haptic, setHapticsEnabled } from "@/lib/haptics";
+import { unlockAudioPlayback } from "@/lib/voice";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -33,16 +34,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const showAssistantButton = pathname !== "/ai";
+  const immersive = pathname === "/ai";
 
   return (
-    <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col">
+    <div className="relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col">
       <main
-        className="flex-1 pb-[calc(var(--app-bottomnav-height)+0.5rem)]"
-        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className={
+          immersive
+            ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+            : "flex-1 pb-[calc(var(--app-bottomnav-height)+5.5rem)]"
+        }
+        style={immersive ? undefined : { paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={pathname}
+            className={immersive ? "flex h-full min-h-0 flex-1 flex-col" : undefined}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -65,6 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             whileTap={{ scale: 0.94 }}
             onClick={() => {
               haptic("tap");
+              unlockAudioPlayback();
               router.push("/ai");
             }}
             aria-label="Open the DeanVerse assistant"

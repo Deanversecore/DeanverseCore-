@@ -332,16 +332,18 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
           suggestions: ["Plan my week", "Create a task"],
         });
       }
-      const lines = ["Three things actually matter today."];
+      const parts = ["Here's what actually matters today."];
       priorities.forEach((task, index) => {
         const due = formatDueLabel(task.dueAt);
-        lines.push(`${index + 1}. **${task.title}**${due ? ` — ${due.toLowerCase()}` : ""}`);
+        const lead = index === 0 ? "First" : index === 1 ? "Then" : "And";
+        parts.push(`${lead}, ${task.title}${due ? `, ${due.toLowerCase()}` : ""}.`);
       });
       if (events.length > 0) {
-        lines.push("");
-        lines.push(`You also have ${pluralize(events.length, "event")} left, starting with ${events[0].title} at ${format(new Date(events[0].startAt), "h:mm a")}.`);
+        parts.push(
+          `You also have ${pluralize(events.length, "event")} left, starting with ${events[0].title} at ${format(new Date(events[0].startAt), "h:mm a")}.`,
+        );
       }
-      return result({ text: lines.join("\n"), suggestions: ["Plan my day", "What am I forgetting?"] });
+      return result({ text: parts.join(" "), suggestions: ["Plan my day", "What am I forgetting?"] });
     }
 
     case "forgetting": {
@@ -357,34 +359,29 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
         });
       }
 
-      const lines = ["Here's what's quietly slipping."];
+      const parts = ["Here's what's quietly slipping."];
       if (overdue.length > 0) {
-        lines.push("");
-        lines.push(`**Overdue** — ${pluralize(overdue.length, "item")}`);
-        overdue.slice(0, 4).forEach((task) => {
-          lines.push(`• ${task.title} (${formatDueLabel(task.dueAt)?.toLowerCase()})`);
-        });
+        parts.push(
+          `Overdue: ${joinSpoken(overdue.slice(0, 4).map((task) => task.title))}.`,
+        );
       }
       if (stale.length > 0) {
-        lines.push("");
-        lines.push("**Follow-ups going cold**");
-        stale.slice(0, 3).forEach((followUp) => {
-          lines.push(`• ${followUp.person} — ${followUp.context} (${relativeFromNow(followUp.createdAt, now)})`);
-        });
+        parts.push(
+          `Follow-ups going cold: ${joinSpoken(stale.slice(0, 3).map((followUp) => `${followUp.person}, ${followUp.context}`))}.`,
+        );
       }
       if (dueReminderList.length > 0) {
-        lines.push("");
-        lines.push("**Reminders landing soon**");
-        dueReminderList.slice(0, 3).forEach((reminder) => {
-          lines.push(`• ${reminder.title} — ${formatDueLabel(reminder.remindAt)}`);
-        });
+        parts.push(
+          `Reminders landing soon: ${joinSpoken(dueReminderList.slice(0, 3).map((reminder) => reminder.title))}.`,
+        );
       }
       if (noDueDate.length > 2) {
-        lines.push("");
-        lines.push(`${pluralize(noDueDate.length, "task")} have no due date at all, which is usually how things disappear.`);
+        parts.push(
+          `${pluralize(noDueDate.length, "task")} have no due date at all, which is usually how things disappear.`,
+        );
       }
       return result({
-        text: lines.join("\n"),
+        text: parts.join(" "),
         suggestions: overdue.length > 0 ? [`Move ${overdue[0].title} to tomorrow`, "Plan my day"] : ["Plan my day"],
       });
     }
@@ -392,7 +389,7 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
     case "next_action": {
       const action = nextBestAction(data, now);
       return result({
-        text: `**${action.headline}**\n\n${action.reason}`,
+        text: `${action.headline}. ${action.reason}`,
         suggestions: action.task
           ? [`Mark ${action.task.title} as done`, `Move ${action.task.title} to tomorrow`]
           : ["Plan my day"],
@@ -407,17 +404,18 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
           suggestions: ["Follow up with someone"],
         });
       }
-      const lines = [`${pluralize(list.length, "person is", "people are")} waiting on you.`];
+      const parts = [`${pluralize(list.length, "person is", "people are")} waiting on you.`];
       list.slice(0, 6).forEach((followUp) => {
-        const due = followUp.dueAt ? ` — ${formatDayLabel(followUp.dueAt).toLowerCase()}` : "";
-        lines.push(`• **${followUp.person}** (${followUp.channel}) — ${followUp.context}${due}`);
+        const due = followUp.dueAt ? ` ${formatDayLabel(followUp.dueAt).toLowerCase()}` : "";
+        parts.push(`${followUp.person}, ${followUp.channel}, ${followUp.context}${due}.`);
       });
       const oldest = staleFollowUps(data, now)[0];
       if (oldest) {
-        lines.push("");
-        lines.push(`${oldest.person} has been waiting the longest — ${relativeFromNow(oldest.createdAt, now)}. I'd start there.`);
+        parts.push(
+          `${oldest.person} has been waiting the longest, ${relativeFromNow(oldest.createdAt, now)}. I'd start there.`,
+        );
       }
-      return result({ text: lines.join("\n"), suggestions: ["Plan my day", "What am I forgetting?"] });
+      return result({ text: parts.join(" "), suggestions: ["Plan my day", "What am I forgetting?"] });
     }
 
     case "summary": {
@@ -429,21 +427,32 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
       const done = completedToday(data, now);
       const reminders = activeReminders(data, now, 24);
 
-      const lines = ["Full picture, nothing left out."];
-      lines.push("");
-      lines.push(`**Today** — ${pluralize(today.length, "task")} due, ${pluralize(events.length, "event")}, ${pluralize(done.length, "item")} already done.`);
-      if (overdue.length > 0) lines.push(`**Overdue** — ${pluralize(overdue.length, "item")}, oldest is "${overdue[0].title}".`);
-      lines.push(`**This week** — ${pluralize(week.length, "item")} with a deadline.`);
-      if (reminders.length > 0) lines.push(`**Reminders** — ${pluralize(reminders.length, "reminder")} in the next 24 hours.`);
-      if (followUps.length > 0) lines.push(`**People** — ${followUps.map((item) => item.person).slice(0, 4).join(", ")} waiting to hear from you.`);
-      if (data.goals.length > 0) lines.push(`**Goals** — tracking ${data.goals.map((goal) => goal.title).slice(0, 3).join(", ")}.`);
-      if (data.memories.length > 0) lines.push(`**Memory** — I'm holding ${pluralize(data.memories.length, "detail")} about you and your work.`);
-
-      lines.push("");
+      const parts = ["Here's the full picture, nothing left out."];
+      parts.push(
+        `Today you've got ${pluralize(today.length, "task")} due, ${pluralize(events.length, "event")}, and ${pluralize(done.length, "item")} already done.`,
+      );
+      if (overdue.length > 0) {
+        parts.push(`Overdue: ${pluralize(overdue.length, "item")}, oldest is ${overdue[0].title}.`);
+      }
+      parts.push(`This week, ${pluralize(week.length, "item")} with a deadline.`);
+      if (reminders.length > 0) {
+        parts.push(`${pluralize(reminders.length, "reminder")} in the next 24 hours.`);
+      }
+      if (followUps.length > 0) {
+        parts.push(
+          `${joinSpoken(followUps.map((item) => item.person).slice(0, 4))} ${followUps.length === 1 ? "is" : "are"} waiting to hear from you.`,
+        );
+      }
+      if (data.goals.length > 0) {
+        parts.push(`You're tracking ${joinSpoken(data.goals.map((goal) => goal.title).slice(0, 3))}.`);
+      }
+      if (data.memories.length > 0) {
+        parts.push(`I'm holding ${pluralize(data.memories.length, "detail")} about you and your work.`);
+      }
       const action = nextBestAction(data, now);
-      lines.push(`If you only do one thing: ${action.headline.toLowerCase()}.`);
+      parts.push(`If you only do one thing: ${action.headline.toLowerCase()}.`);
 
-      return result({ text: lines.join("\n"), suggestions: ["Plan my day", "Who do I need to follow up with?"] });
+      return result({ text: parts.join(" "), suggestions: ["Plan my day", "Who do I need to follow up with?"] });
     }
 
     case "recall": {
@@ -458,10 +467,10 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
             : "My memory is empty so far. Start with something like \"Remember that I prefer mornings for deep work.\"",
         });
       }
-      const lines = [query ? `Here's what I know about "${query}".` : "Here's what I'm holding onto."];
-      matches.slice(0, 6).forEach((memory) => lines.push(`• ${memory.content}`));
+      const parts = [query ? `Here's what I know about ${query}.` : "Here's what I'm holding onto."];
+      parts.push(joinSpoken(matches.slice(0, 6).map((memory) => memory.content)) + ".");
       return result({
-        text: lines.join("\n"),
+        text: parts.join(" "),
         receipts: matches.slice(0, 3).map((memory) => ({
           kind: "memory" as const,
           verb: "recalled" as const,
@@ -478,39 +487,35 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
       if (total === 0) {
         return result({ text: `Nothing matches "${intent.query}" anywhere in your workspace.` });
       }
-      const lines = [`${pluralize(total, "match")} for "${intent.query}".`];
+      const parts = [`I found ${pluralize(total, "match")} for ${intent.query}.`];
       if (found.tasks.length) {
-        lines.push("");
-        lines.push("**Tasks**");
-        found.tasks.slice(0, 4).forEach((task) => lines.push(`• ${task.title}${task.done ? " (done)" : ""}`));
+        parts.push(
+          `On tasks: ${joinSpoken(found.tasks.slice(0, 4).map((task) => (task.done ? `${task.title}, already done` : task.title)))}.`,
+        );
       }
       if (found.events.length) {
-        lines.push("");
-        lines.push("**Calendar**");
-        found.events.slice(0, 3).forEach((event) => lines.push(`• ${event.title} — ${formatDayLabel(event.startAt)}`));
+        parts.push(
+          `On the calendar: ${joinSpoken(found.events.slice(0, 3).map((event) => `${event.title} ${formatDayLabel(event.startAt)}`))}.`,
+        );
       }
       if (found.notes.length) {
-        lines.push("");
-        lines.push("**Notes**");
-        found.notes.slice(0, 3).forEach((note) => lines.push(`• ${note.title}`));
+        parts.push(`In notes: ${joinSpoken(found.notes.slice(0, 3).map((note) => note.title))}.`);
       }
       if (found.memories.length) {
-        lines.push("");
-        lines.push("**Memory**");
-        found.memories.slice(0, 3).forEach((memory) => lines.push(`• ${memory.content}`));
+        parts.push(`In memory: ${joinSpoken(found.memories.slice(0, 3).map((memory) => memory.content))}.`);
       }
       if (found.followUps.length) {
-        lines.push("");
-        lines.push("**Follow-ups**");
-        found.followUps.slice(0, 3).forEach((item) => lines.push(`• ${item.person} — ${item.context}`));
+        parts.push(
+          `Follow-ups: ${joinSpoken(found.followUps.slice(0, 3).map((item) => `${item.person}, ${item.context}`))}.`,
+        );
       }
-      return result({ text: lines.join("\n") });
+      return result({ text: parts.join(" ") });
     }
 
     case "unknown":
     default:
       return result({
-        text: "I didn't catch a clear action in that. I'm strongest when you tell me what to capture or what to figure out — try one of these.",
+        text: "I didn't quite catch what you need. Tell me what to capture, or ask me to look at your day.",
         suggestions: DEFAULT_SUGGESTIONS,
       });
   }
@@ -526,6 +531,13 @@ export function respond(input: string, data: AppData, now: Date = new Date()): A
 
 function lowerFirst(value: string): string {
   return value.charAt(0).toLowerCase() + value.slice(1);
+}
+
+function joinSpoken(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
 export { DEFAULT_SUGGESTIONS };

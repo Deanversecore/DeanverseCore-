@@ -116,7 +116,7 @@ export default function SettingsPage() {
             />
             <Toggle
               label="Voice input"
-              description="Dictate to the assistant when your device supports it"
+              description="I listen when you talk to me"
               checked={profile.voiceEnabled}
               onChange={(value) => updateProfile({ voiceEnabled: value })}
             />
@@ -194,10 +194,10 @@ export default function SettingsPage() {
                 pushes automatically and changes from your other devices arrive live. Your rows are
                 readable only by you.
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex min-w-0 flex-col gap-2">
                 <input
                   name="sync-email"
-                  className="admin-input"
+                  className="admin-input min-w-0"
                   type="email"
                   value={email}
                   placeholder="you@example.com"
@@ -213,7 +213,7 @@ export default function SettingsPage() {
                     setStatus(error ?? "Check your email for the sign-in link.");
                     setBusy(false);
                   }}
-                  className="admin-btn-gold shrink-0"
+                  className="admin-btn-gold w-full shrink-0"
                 >
                   Send link
                 </button>
@@ -301,7 +301,7 @@ function VoicePanel() {
       <div className="mt-2 flex flex-col divide-y divide-white/[0.06]">
         <Toggle
           label="Spoken replies"
-          description="The assistant reads its answers out loud"
+          description="I talk out loud, like a person in the room"
           checked={profile.spokenRepliesEnabled}
           onChange={(value) => {
             if (!value) stopSpeaking();
@@ -310,7 +310,7 @@ function VoicePanel() {
         />
         <Toggle
           label="Hands-free conversation"
-          description="It listens again as soon as it finishes speaking"
+          description="I keep listening after I finish talking"
           checked={profile.handsFreeEnabled}
           onChange={(value) => updateProfile({ handsFreeEnabled: value })}
         />
@@ -345,7 +345,7 @@ function VoicePanel() {
           unlockAudioPlayback();
           void speak(
             "settings-preview",
-            `Hello ${profile.name || "there"}. This is how I'll sound when I read your day back to you.`,
+            `Hey ${profile.name || "there"}. This is me. I'll talk you through your day like this.`,
             { voiceURI: profile.voiceURI },
           );
         }}

@@ -107,18 +107,25 @@ interface EmptyStateProps {
   title: string;
   body: string;
   action?: ReactNode;
+  compact?: boolean;
 }
 
-export function EmptyState({ icon, title, body, action }: EmptyStateProps) {
+export function EmptyState({ icon, title, body, action, compact = false }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-col items-center px-6 py-12 text-center"
+      className={cx(
+        "flex flex-col items-center px-6 text-center",
+        compact ? "py-6" : "py-12",
+      )}
     >
       <div
-        className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-[color:var(--admin-gold)]"
+        className={cx(
+          "mb-4 flex items-center justify-center rounded-2xl text-[color:var(--admin-gold)]",
+          compact ? "h-11 w-11" : "h-14 w-14",
+        )}
         style={{
           border: "1px solid color-mix(in srgb, var(--admin-gold) 26%, transparent)",
           background: "var(--admin-gold-soft)",

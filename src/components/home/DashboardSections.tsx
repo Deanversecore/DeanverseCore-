@@ -55,6 +55,7 @@ export function PrioritiesSection({ data, now }: { data: AppData; now: Date }) {
       {priorities.length === 0 ? (
         <Panel variant="flat" className="py-2">
           <EmptyState
+            compact
             icon={<CheckCircle2 size={22} />}
             title="Nothing outstanding"
             body="No overdue work and nothing due today. Ask the assistant to pull something forward from your goals."
@@ -93,6 +94,7 @@ export function ScheduleSection({ data, now }: { data: AppData; now: Date }) {
       {events.length === 0 ? (
         <Panel variant="flat" className="py-2">
           <EmptyState
+            compact
             icon={<CalendarPlus size={22} />}
             title="Your calendar is open"
             body="Nothing scheduled ahead. Say “schedule a call tomorrow at 2pm” and I'll add it."

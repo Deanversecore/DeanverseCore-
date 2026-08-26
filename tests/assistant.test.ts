@@ -151,3 +151,18 @@ test("spoken text drops the markup the screen renders", () => {
   assert.match(spoken, /Invoice SoCal Appliance/);
   assert.match(spoken, /1, Call John/);
 });
+
+test("the assistant answers in spoken sentences, not markdown", () => {
+  const data = workspace();
+  const plan = respond("Plan my day", data, NOW).text;
+  assert.ok(!plan.includes("**"));
+  assert.ok(!plan.includes("•"));
+  assert.match(plan, /Fixed points/);
+  assert.match(plan, /Discovery call/);
+
+  const slipping = respond("What am I forgetting?", data, NOW).text;
+  assert.ok(!slipping.includes("**"));
+  assert.ok(!slipping.includes("•"));
+  assert.match(slipping, /Overdue/);
+  assert.match(slipping, /Outlaw Tattoo/);
+});

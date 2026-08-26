@@ -79,7 +79,7 @@ function MessageBody({ content }: { content: string }) {
   );
 }
 
-function Receipts({ receipts }: { receipts: ActionReceipt[] }) {
+export function Receipts({ receipts }: { receipts: ActionReceipt[] }) {
   return (
     <div className="mt-3 flex flex-col gap-1.5">
       {receipts.map((receipt) => {

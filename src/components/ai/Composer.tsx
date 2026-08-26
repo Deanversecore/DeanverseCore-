@@ -17,10 +17,11 @@ interface ComposerProps {
   disabled?: boolean;
   autoListen?: boolean;
   voiceEnabled: boolean;
-  /** Sends what you said as soon as you stop talking. */
   handsFree?: boolean;
-  /** Any change to this number opens the mic again. */
   listenSignal?: number;
+  /** Hide the text field and lead with a talk button. */
+  talkFirst?: boolean;
+  onListeningChange?: (listening: boolean) => void;
 }
 
 export function Composer({
@@ -32,28 +33,37 @@ export function Composer({
   voiceEnabled,
   handsFree,
   listenSignal = 0,
+  talkFirst = false,
+  onListeningChange,
 }: ComposerProps) {
   const [listening, setListening] = useState(false);
   const stopRef = useRef<(() => void) | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  /* Dictation callbacks outlive the render that created them, so they read the
-     current props from refs rather than closing over stale ones. */
   const handsFreeRef = useRef(handsFree);
   const submitRef = useRef(onSubmit);
+  const onListeningChangeRef = useRef(onListeningChange);
+  const talkFirstRef = useRef(talkFirst);
   useEffect(() => {
     handsFreeRef.current = handsFree;
     submitRef.current = onSubmit;
+    onListeningChangeRef.current = onListeningChange;
+    talkFirstRef.current = talkFirst;
   });
 
   const voiceReady = useSyncExternalStore(noopSubscribe, isVoiceSupported, returnFalse);
+
+  const setListeningState = useCallback((next: boolean) => {
+    setListening(next);
+    onListeningChangeRef.current?.(next);
+  }, []);
 
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
-  }, [value]);
+  }, [value, talkFirst]);
 
   const beginListening = useCallback(() => {
     if (stopRef.current) {
@@ -66,7 +76,7 @@ export function Composer({
       onPartial: onChange,
       onFinal: (transcript) => {
         haptic("success");
-        if (handsFreeRef.current) {
+        if (handsFreeRef.current || talkFirstRef.current) {
           onChange("");
           submitRef.current(transcript);
         } else {
@@ -74,18 +84,16 @@ export function Composer({
         }
       },
       onEnd: () => {
-        setListening(false);
+        setListeningState(false);
         stopRef.current = null;
       },
     });
     if (stop) {
       stopRef.current = stop;
-      setListening(true);
+      setListeningState(true);
     }
-  }, [onChange]);
+  }, [onChange, setListeningState]);
 
-  /* Deep links like /ai?listen=1 open straight into dictation. Dictation is an
-     external API, so kick it off after the render settles rather than inline. */
   const autoListenStarted = useRef(false);
   useEffect(() => {
     if (!autoListen || !voiceReady || !voiceEnabled || autoListenStarted.current) return;
@@ -94,7 +102,6 @@ export function Composer({
     return () => window.clearTimeout(id);
   }, [autoListen, voiceReady, voiceEnabled, beginListening]);
 
-  /* The assistant re-opens the mic after it finishes speaking. */
   useEffect(() => {
     if (listenSignal === 0 || !voiceReady || !voiceEnabled || stopRef.current) return;
     const id = window.setTimeout(() => beginListening(), 260);
@@ -112,6 +119,40 @@ export function Composer({
   };
 
   const showVoice = voiceEnabled && voiceReady;
+
+  if (talkFirst && showVoice) {
+    return (
+      <div className="flex flex-col items-center px-3 pb-3 pt-1">
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.94 }}
+          onClick={beginListening}
+          disabled={disabled}
+          aria-label={listening ? "Stop listening" : "Talk to me"}
+          aria-pressed={listening}
+          className={cx(
+            "flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border transition-colors",
+            listening && "gold-pulse",
+          )}
+          style={{
+            borderColor: listening
+              ? "color-mix(in srgb, var(--admin-gold) 55%, transparent)"
+              : "#c9a96273",
+            background: listening
+              ? "linear-gradient(135deg, #dfc88a 0%, #c9a962 100%)"
+              : "linear-gradient(135deg, #c9a962f2 0%, #aa8c46f2 100%)",
+            boxShadow: "0 10px 34px -8px var(--admin-gold-glow), var(--admin-elev-2)",
+            color: "#0a0a0a",
+          }}
+        >
+          {listening ? <Square size={18} fill="currentColor" /> : <Mic size={26} />}
+        </motion.button>
+        <p className="mt-2.5 text-[0.6875rem] text-white/40">
+          {listening ? "Tap to stop" : "Tap to talk"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -147,7 +188,7 @@ export function Composer({
               submit();
             }
           }}
-          placeholder={listening ? "Listening…" : "Tell me what you need"}
+          placeholder={listening ? "Listening…" : "Or type if you'd rather"}
           aria-label="Message your assistant"
           className="max-h-[8.25rem] min-h-[2.5rem] flex-1 resize-none bg-transparent px-2.5 py-2 text-[0.875rem] leading-relaxed text-white placeholder:text-white/35 focus:outline-none"
         />
@@ -157,7 +198,7 @@ export function Composer({
             type="button"
             whileTap={{ scale: 0.92 }}
             onClick={beginListening}
-            aria-label={listening ? "Stop dictation" : "Start dictation"}
+            aria-label={listening ? "Stop listening" : "Talk to me"}
             aria-pressed={listening}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors"
             style={{

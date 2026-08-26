@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { CalendarDays, LayoutGrid, ListChecks, MoreHorizontal, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { unlockAudioPlayback } from "@/lib/voice";
 import { cx } from "@/components/ui/Primitives";
 
 const ITEMS = [
@@ -30,7 +31,10 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                onClick={() => haptic("select")}
+                onClick={() => {
+                  haptic("select");
+                  if (href === "/ai") unlockAudioPlayback();
+                }}
                 aria-current={active ? "page" : undefined}
                 className="relative flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-2xl px-1 py-1.5"
               >

@@ -171,6 +171,21 @@ export function listVoices(): SpeechSynthesisVoice[] {
   return window.speechSynthesis.getVoices().filter((voice) => voice.lang.startsWith("en"));
 }
 
+function pickVoice(voiceURI: string | null): SpeechSynthesisVoice | undefined {
+  const voices = listVoices();
+  if (voiceURI) {
+    const match = voices.find((item) => item.voiceURI === voiceURI);
+    if (match) return match;
+  }
+  return (
+    voices.find((voice) =>
+      /natural|enhanced|premium|neural|samantha|jenny|google us english|aria|libby/i.test(voice.name),
+    ) ??
+    voices.find((voice) => voice.default) ??
+    voices[0]
+  );
+}
+
 export function subscribeVoices(listener: () => void): () => void {
   if (!isSpeechOutputSupported()) return () => {};
   window.speechSynthesis.addEventListener("voiceschanged", listener);
@@ -268,11 +283,11 @@ function speakInBrowser(id: string, text: string, voiceURI: string | null, onDon
   }
 
   const utterance = new SpeechSynthesisUtterance(text);
-  const voice = voiceURI ? listVoices().find((item) => item.voiceURI === voiceURI) : undefined;
+  const voice = pickVoice(voiceURI);
   if (voice) utterance.voice = voice;
   utterance.lang = voice?.lang ?? "en-US";
-  utterance.rate = 1.02;
-  utterance.pitch = 1;
+  utterance.rate = 0.96;
+  utterance.pitch = 1.05;
 
   const finish = () => {
     window.clearInterval(watchdog);

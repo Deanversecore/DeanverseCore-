@@ -43,7 +43,7 @@ export function Onboarding() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center px-5 py-10">
+    <div className="flex min-h-dvh flex-col justify-center px-5 py-10" style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}>
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -61,9 +61,8 @@ export function Onboarding() {
           {greetingFor(now)}. Let&apos;s set up your{" "}
           <span className="text-gold-gradient">command center</span>.
         </h1>
-        <p className="mt-2.5 text-[0.8125rem] leading-relaxed text-white/55">
-          Your workspace starts empty on purpose — everything in it will be something you actually
-          said or captured. I just need to know who I&apos;m working for.
+        <p className="mt-2.5 max-w-[20rem] text-[0.8125rem] leading-relaxed text-white/55">
+          I talk. You talk. I turn what you say into tasks, reminders, and memory — then I keep watch.
         </p>
 
         <Panel className="mt-7 p-5">

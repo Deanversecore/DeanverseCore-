@@ -12,7 +12,7 @@ export const DEFAULT_PROFILE: AppData["profile"] = {
   proactiveEnabled: true,
   voiceEnabled: true,
   spokenRepliesEnabled: true,
-  handsFreeEnabled: false,
+  handsFreeEnabled: true,
   voiceURI: null,
   hapticsEnabled: true,
   onboardedAt: null,

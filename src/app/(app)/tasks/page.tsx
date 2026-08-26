@@ -124,9 +124,11 @@ export default function TasksPage() {
           ))
         )}
 
-        <p className="px-1 text-center text-[0.6875rem] text-white/25">
-          Swipe right to complete · swipe left to delete
-        </p>
+        {groups.length > 0 ? (
+          <p className="px-1 text-center text-[0.6875rem] text-white/25">
+            Swipe right to complete · swipe left to delete
+          </p>
+        ) : null}
       </div>
 
       <button

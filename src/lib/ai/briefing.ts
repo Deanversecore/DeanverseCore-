@@ -167,53 +167,42 @@ export function buildDayPlan(data: AppData, now: Date): string {
   const events = eventsOnDay(data, now);
   const priorities = todaysPriorities(data, now, 4);
   const capacity = remainingCapacityHours(data, now);
-  const lines: string[] = [];
-
-  lines.push(`Here's how I'd run ${format(now, "EEEE")}.`);
+  const parts: string[] = [`Here's how I'd run ${format(now, "EEEE")}.`];
 
   if (events.length > 0) {
-    lines.push("");
-    lines.push("**Fixed points**");
-    for (const event of events) {
-      lines.push(`• ${format(new Date(event.startAt), "h:mm a")} — ${event.title}`);
-    }
+    parts.push(
+      `Fixed points on the calendar: ${joinNaturally(events.map((event) => `${event.title} at ${format(new Date(event.startAt), "h:mm a")}`))}.`,
+    );
   }
 
   if (priorities.length > 0) {
-    lines.push("");
-    lines.push("**Work the list in this order**");
-    priorities.forEach((task, index) => {
-      const due = formatDueLabel(task.dueAt);
-      const suffix = due ? ` (${due.toLowerCase()})` : "";
-      lines.push(`${index + 1}. ${task.title}${suffix}`);
-    });
+    parts.push(
+      `I'd work the list in this order: ${joinNaturally(priorities.map((task) => task.title))}.`,
+    );
   }
 
   const routines = routinesForDay(data, now).filter(
     (routine) => !routine.lastCompletedAt || new Date(routine.lastCompletedAt).toDateString() !== now.toDateString(),
   );
   if (routines.length > 0) {
-    lines.push("");
-    lines.push("**Don't drop your routines**");
-    lines.push(routines.map((routine) => routine.title).join(" · "));
+    parts.push(`Don't drop your routines — ${joinNaturally(routines.map((routine) => routine.title))}.`);
   }
 
-  lines.push("");
   if (priorities.length === 0 && events.length === 0) {
-    lines.push("Honestly, there's nothing pressing. Use the space for something that compounds.");
+    parts.push("Honestly, there's nothing pressing. Use the space for something that compounds.");
   } else if (capacity > 0) {
-    lines.push(
+    parts.push(
       `You have roughly ${capacity} ${capacity === 1 ? "hour" : "hours"} of open time left. Front-load the first two items while you still have momentum.`,
     );
   } else {
-    lines.push("Your workday window is nearly closed — pick one item and let the rest roll to tomorrow.");
+    parts.push("Your workday window is nearly closed — pick one item and let the rest roll to tomorrow.");
   }
 
-  return lines.join("\n");
+  return parts.join(" ");
 }
 
 export function buildWeekPlan(data: AppData, now: Date): string {
-  const lines: string[] = ["Here's the shape of your week."];
+  const parts: string[] = ["Here's the shape of your week."];
 
   for (let offset = 0; offset < 7; offset += 1) {
     const day = addDays(now, offset);
@@ -227,33 +216,31 @@ export function buildWeekPlan(data: AppData, now: Date): string {
 
     if (dayEvents.length === 0 && dayTasks.length === 0) continue;
 
-    const parts: string[] = [];
-    if (dayEvents.length > 0) parts.push(pluralize(dayEvents.length, "event"));
-    if (dayTasks.length > 0) parts.push(pluralize(dayTasks.length, "task"));
-
-    lines.push("");
-    lines.push(`**${offset === 0 ? "Today" : format(day, "EEEE")}** — ${parts.join(", ")}`);
-    for (const event of dayEvents.slice(0, 3)) {
-      lines.push(`• ${format(new Date(event.startAt), "h:mm a")} ${event.title}`);
+    const label = offset === 0 ? "Today" : format(day, "EEEE");
+    const load: string[] = [];
+    if (dayEvents.length > 0) {
+      load.push(
+        joinNaturally(dayEvents.slice(0, 3).map((event) => `${event.title} at ${format(new Date(event.startAt), "h:mm a")}`)),
+      );
     }
-    for (const task of dayTasks.slice(0, 3)) {
-      lines.push(`• ${task.title}`);
+    if (dayTasks.length > 0) {
+      load.push(joinNaturally(dayTasks.slice(0, 3).map((task) => task.title)));
     }
+    parts.push(`${label}: ${load.join("; ")}.`);
   }
 
   const weekTasks = tasksDueWithin(data, now, 7);
   const heaviest = findHeaviestDay(data, now);
 
-  lines.push("");
   if (weekTasks.length === 0) {
-    lines.push("Nothing is due this week. If you want, I can pull work forward from your goals.");
+    parts.push("Nothing is due this week. If you want, I can pull work forward from your goals.");
   } else {
-    lines.push(
+    parts.push(
       `${pluralize(weekTasks.length, "item")} land this week${heaviest ? `, and ${heaviest} is your heaviest day` : ""}. Move one thing off it now and the rest of the week gets easier.`,
     );
   }
 
-  return lines.join("\n");
+  return parts.join(" ");
 }
 
 function findHeaviestDay(data: AppData, now: Date): string | null {
