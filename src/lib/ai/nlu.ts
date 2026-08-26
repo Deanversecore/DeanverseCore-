@@ -21,10 +21,12 @@ export type Intent =
   | { type: "recall"; query: string }
   | { type: "search"; query: string }
   | { type: "greeting" }
+  | { type: "wake" }
+  | { type: "hearing_check" }
   | { type: "unknown"; text: string };
 
 const FILLER_PREFIX =
-  /^(hey|hi|hello|ok|okay|please|could you|can you|would you|i need to|i want to|i have to|i should|let's|lets)\s+/i;
+  /^(hey|hi|hello|ok|okay|please|could you|can you|would you|i need to|i want to|i have to|i should|let's|lets|core|kor|kore)\s+/i;
 
 const PRIORITY_PATTERNS: Array<{ pattern: RegExp; priority: Priority }> = [
   { pattern: /\b(urgent|asap|critical|emergency|right away)\b/i, priority: "critical" },
@@ -115,6 +117,14 @@ export function interpret(input: string, now: Date = new Date()): Intent {
 
   if (/^(hi|hey|hello|yo|good (morning|afternoon|evening))\b[\s!.?]*$/i.test(lower)) {
     return { type: "greeting" };
+  }
+
+  if (
+    /^(can you hear me|do you hear me|did you hear me|are you (there|listening|here)|you (there|listening)|testing|test 1 ?2 ?3)\b/i.test(
+      lower,
+    )
+  ) {
+    return { type: "hearing_check" };
   }
 
   // ---------------------------------------------------------------- queries

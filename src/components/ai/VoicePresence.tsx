@@ -6,7 +6,7 @@ import { cx } from "@/components/ui/Primitives";
 export type PresenceState = "idle" | "listening" | "thinking" | "speaking";
 
 const STATUS: Record<PresenceState, string> = {
-  idle: "Ready when you are",
+  idle: "Say Core",
   listening: "I'm listening",
   thinking: "Give me a second",
   speaking: "Speaking",

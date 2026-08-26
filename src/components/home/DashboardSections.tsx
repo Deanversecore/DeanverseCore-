@@ -346,7 +346,7 @@ export function QuickActions() {
         className="admin-btn-ghost mt-2.5 w-full"
       >
         <Mic size={15} />
-        Speak to your assistant
+        Speak to Core
       </button>
     </section>
   );

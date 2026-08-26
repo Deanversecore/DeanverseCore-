@@ -61,7 +61,7 @@ export function Onboarding() {
           <span className="text-gold-gradient">command center</span>.
         </h1>
         <p className="mt-2.5 max-w-[20rem] text-[0.8125rem] leading-relaxed text-white/80">
-          I talk. You talk. I turn what you say into tasks, reminders, and memory — then I keep watch.
+          I talk. You talk. Say Core when you want me — I turn what you say into tasks, reminders, and memory.
         </p>
 
         <Panel className="mt-7 p-5">

@@ -21,14 +21,24 @@ import {
 } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { VoicePresence, type PresenceState } from "@/components/ai/VoicePresence";
-import { Composer } from "@/components/ai/Composer";
+import { Composer, type UtteranceSource, type VoiceOrigin } from "@/components/ai/Composer";
 import { Receipts } from "@/components/ai/MessageBubble";
 import { Skeleton } from "@/components/ui/Primitives";
 import { LogoMark } from "@/components/ui/Logo";
+import { ASSISTANT_NAME, hasWakeWord, resolveVoiceTurn, stripWakeWord } from "@/lib/ai/wake";
 
 const noopSubscribe = () => () => {};
 const returnFalse = () => false;
 const returnNull = () => null;
+
+function looksLikeEcho(heard: string, spoken: string): boolean {
+  const a = heard.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const b = spoken.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!a || a.length < 6) return false;
+  if (b.includes(a)) return true;
+  const head = b.slice(0, Math.min(48, b.length));
+  return head.length >= 12 && a.includes(head);
+}
 
 export function AssistantScreen() {
   const router = useRouter();
@@ -41,7 +51,6 @@ export function AssistantScreen() {
   const clearMessages = useStore((state) => state.clearMessages);
   const applyEffects = useStore((state) => state.applyEffects);
   const updateProfile = useStore((state) => state.updateProfile);
-  const name = useStore((state) => state.profile.name);
   const voiceEnabled = useStore((state) => state.profile.voiceEnabled);
   const spokenRepliesEnabled = useStore((state) => state.profile.spokenRepliesEnabled);
   const handsFreeEnabled = useStore((state) => state.profile.handsFreeEnabled);
@@ -51,20 +60,69 @@ export function AssistantScreen() {
   const [listening, setListening] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(() => Boolean(params.get("draft")));
   const [listenSignal, setListenSignal] = useState(0);
+  const [wakeHint, setWakeHint] = useState("");
   const handledDeepLink = useRef(false);
-  const greeted = useRef(false);
+  const awaitingCommand = useRef(false);
+  const awaitingTimer = useRef<number | undefined>(undefined);
 
   const speechReady = useSyncExternalStore(noopSubscribe, canSpeakOutLoud, returnFalse);
   const speakingId = useSyncExternalStore(subscribeSpeech, getSpeakingId, returnNull);
   const speaking = speakingId !== null;
 
+  const openCommandWindow = useCallback(() => {
+    awaitingCommand.current = true;
+    window.clearTimeout(awaitingTimer.current);
+    awaitingTimer.current = window.setTimeout(() => {
+      awaitingCommand.current = false;
+    }, 16000);
+  }, []);
+
+  const closeCommandWindow = useCallback(() => {
+    awaitingCommand.current = false;
+    window.clearTimeout(awaitingTimer.current);
+  }, []);
+
   const send = useCallback(
-    async (text: string) => {
+    (text: string, meta?: { source: UtteranceSource; origin?: VoiceOrigin }): boolean => {
       const trimmed = text.trim();
-      if (!trimmed) return;
+      if (!trimmed) return true;
+
+      const source = meta?.source ?? "typed";
+      const origin = meta?.origin;
+      let engineInput = trimmed;
+
+      if (source === "voice") {
+        const spoken = [...useStore.getState().messages].reverse().find((message) => message.role === "assistant");
+        if (spoken && looksLikeEcho(trimmed, spoken.content)) {
+          if (origin === "handsfree") setListenSignal((value) => value + 1);
+          return false;
+        }
+
+        const turn = resolveVoiceTurn(trimmed);
+        const followUp = awaitingCommand.current;
+
+        if (turn.kind === "ignore" && !followUp) {
+          setWakeHint("Say Core when you want me.");
+          if (origin === "handsfree") {
+            setListenSignal((value) => value + 1);
+          }
+          return false;
+        }
+
+        if (turn.kind === "wake") {
+          engineInput = trimmed;
+          openCommandWindow();
+        } else if (turn.kind === "command") {
+          engineInput = turn.command;
+          closeCommandWindow();
+        } else {
+          closeCommandWindow();
+        }
+      }
 
       unlockAudioPlayback();
       stopSpeaking();
+      setWakeHint("");
 
       const now = new Date();
       appendMessage({
@@ -77,92 +135,69 @@ export function AssistantScreen() {
       setThinking(true);
 
       const data = selectData(useStore.getState());
-      const outcome = respond(trimmed, data, now);
+      const outcome = respond(engineInput, data, now);
       applyEffects(outcome.effects);
 
-      const [enhanced] = await Promise.all([
-        enhanceReply(trimmed, interpret(trimmed, now).type, outcome.text),
-        new Promise((resolve) => setTimeout(resolve, 280)),
-      ]);
+      void (async () => {
+        const command = stripWakeWord(engineInput);
+        const intentType =
+          hasWakeWord(engineInput) && !command ? "wake" : interpret(command || engineInput, now).type;
+        const [enhanced] = await Promise.all([
+          enhanceReply(engineInput, intentType, outcome.text),
+          new Promise((resolve) => setTimeout(resolve, 280)),
+        ]);
 
-      setThinking(false);
-      haptic(outcome.receipts.length > 0 ? "success" : "tap");
+        setThinking(false);
+        haptic(outcome.receipts.length > 0 ? "success" : "tap");
 
-      const reply = enhanced ?? outcome.text;
-      const id = createId("msg");
-      appendMessage({
-        id,
-        role: "assistant",
-        content: reply,
-        createdAt: new Date().toISOString(),
-        receipts: outcome.receipts,
-        suggestions: outcome.suggestions,
-      });
-
-      const { profile } = useStore.getState();
-      if (profile.spokenRepliesEnabled) {
-        void speak(id, reply, {
-          voiceURI: profile.voiceURI,
-          onDone: () => {
-            if (profile.handsFreeEnabled && profile.voiceEnabled) {
-              setListenSignal((value) => value + 1);
-            }
-          },
+        const reply = enhanced ?? outcome.text;
+        const id = createId("msg");
+        appendMessage({
+          id,
+          role: "assistant",
+          content: reply,
+          createdAt: new Date().toISOString(),
+          receipts: outcome.receipts,
+          suggestions: outcome.suggestions,
         });
-      } else if (profile.handsFreeEnabled && profile.voiceEnabled) {
-        setListenSignal((value) => value + 1);
-      }
+
+        const { profile } = useStore.getState();
+        const listenAgain = () => {
+          if (profile.handsFreeEnabled && profile.voiceEnabled) {
+            setListenSignal((value) => value + 1);
+          }
+        };
+
+        if (profile.spokenRepliesEnabled) {
+          void speak(id, reply, {
+            voiceURI: profile.voiceURI,
+            onDone: listenAgain,
+          });
+        } else {
+          listenAgain();
+        }
+      })();
+
+      return true;
     },
-    [appendMessage, applyEffects],
+    [appendMessage, applyEffects, closeCommandWindow, openCommandWindow],
   );
 
   useEffect(() => {
     primeSpeech();
-    return () => stopSpeaking();
+    return () => {
+      stopSpeaking();
+      window.clearTimeout(awaitingTimer.current);
+    };
   }, []);
 
   useEffect(() => {
     const question = params.get("q");
     if (!mounted || !hydrated || !question || handledDeepLink.current) return;
     handledDeepLink.current = true;
-    greeted.current = true;
-    const id = window.setTimeout(() => void send(question), 0);
+    const id = window.setTimeout(() => send(question, { source: "typed" }), 0);
     return () => window.clearTimeout(id);
   }, [mounted, hydrated, params, send]);
-
-  useEffect(() => {
-    if (!mounted || !hydrated || greeted.current || messages.length > 0) return;
-    if (params.get("q") || params.get("draft") || params.get("listen") === "1") return;
-    greeted.current = true;
-
-    const greeting = name.trim()
-      ? `Hey ${name.trim()}. I'm right here. What do you need?`
-      : "Hey. I'm right here. What do you need?";
-    const id = createId("msg");
-    appendMessage({
-      id,
-      role: "assistant",
-      content: greeting,
-      createdAt: new Date().toISOString(),
-      suggestions: DEFAULT_SUGGESTIONS.slice(0, 3),
-    });
-
-    const { profile } = useStore.getState();
-    if (profile.spokenRepliesEnabled) {
-      const timer = window.setTimeout(() => {
-        unlockAudioPlayback();
-        void speak(id, greeting, {
-          voiceURI: profile.voiceURI,
-          onDone: () => {
-            if (profile.handsFreeEnabled && profile.voiceEnabled) {
-              setListenSignal((value) => value + 1);
-            }
-          },
-        });
-      }, 400);
-      return () => window.clearTimeout(timer);
-    }
-  }, [mounted, hydrated, messages.length, name, params, appendMessage]);
 
   const lastAssistant = [...messages].reverse().find((message) => message.role === "assistant");
   const lastUser = [...messages].reverse().find((message) => message.role === "user");
@@ -178,10 +213,10 @@ export function AssistantScreen() {
         : "idle";
 
   const caption = listening
-    ? draft || "Go ahead — I'm listening."
+    ? draft || "Go ahead — say Core."
     : thinking
       ? ""
-      : lastAssistant?.content ?? "";
+      : wakeHint || lastAssistant?.content || `I'm ${ASSISTANT_NAME}. Say Core when you need me.`;
 
   if (!mounted || !hydrated) {
     return (
@@ -207,17 +242,17 @@ export function AssistantScreen() {
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <LogoMark size={30} />
           <div className="min-w-0 leading-none">
-            <p className="admin-heading-serif truncate text-[0.9375rem] text-white">DeanVerse</p>
+            <p className="admin-heading-serif truncate text-[0.9375rem] text-white">{ASSISTANT_NAME}</p>
             <p className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-white/40">
               <span className="h-1.5 w-1.5 rounded-full bg-[#6f8f72]" />
               {listening
-                ? "Listening"
+                ? "Listening for Core"
                 : thinking
                   ? "Thinking"
                   : speaking
                     ? "Speaking"
                     : spokenRepliesEnabled
-                      ? "I'm here"
+                      ? "Say Core"
                       : "Voice is muted"}
             </p>
           </div>
@@ -274,7 +309,8 @@ export function AssistantScreen() {
           onClick={() => {
             haptic("tap");
             stopSpeaking();
-            greeted.current = false;
+            closeCommandWindow();
+            setWakeHint("");
             clearMessages();
           }}
           aria-label="Start a new conversation"
@@ -287,7 +323,7 @@ export function AssistantScreen() {
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 py-4">
         <VoicePresence state={presence} />
 
-        {lastUser && !listening ? (
+        {lastUser && !listening && !wakeHint ? (
           <p className="mt-4 max-w-[22rem] truncate text-center text-[0.75rem] text-white/70">
             You said “{lastUser.content}”
           </p>
@@ -341,7 +377,7 @@ export function AssistantScreen() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              onClick={() => void send(suggestion)}
+              onClick={() => send(suggestion, { source: "typed" })}
               className="admin-chip shrink-0 py-2 text-[0.6875rem] active:bg-white/10"
             >
               {suggestion}
@@ -362,6 +398,13 @@ export function AssistantScreen() {
           listenSignal={listenSignal}
           talkFirst={!keyboardOpen}
           onListeningChange={setListening}
+          onVoiceError={(reason) => {
+            setWakeHint(
+              reason === "not-allowed"
+                ? "Allow the microphone so Core can hear you."
+                : "This browser can't listen. Type, or try Chrome or Safari.",
+            );
+          }}
         />
       </div>
     </div>

@@ -310,7 +310,7 @@ function VoicePanel() {
         />
         <Toggle
           label="Hands-free conversation"
-          description="I keep listening after I finish talking"
+          description="Keep listening for Core after I finish talking"
           checked={profile.handsFreeEnabled}
           onChange={(value) => updateProfile({ handsFreeEnabled: value })}
         />
@@ -345,7 +345,7 @@ function VoicePanel() {
           unlockAudioPlayback();
           void speak(
             "settings-preview",
-            `Hey ${profile.name || "there"}. This is me. I'll talk you through your day like this.`,
+            `Hey ${profile.name || "there"}. This is Core. I'll talk you through your day like this.`,
             { voiceURI: profile.voiceURI },
           );
         }}
