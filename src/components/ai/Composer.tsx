@@ -17,6 +17,10 @@ interface ComposerProps {
   disabled?: boolean;
   autoListen?: boolean;
   voiceEnabled: boolean;
+  /** Sends what you said as soon as you stop talking. */
+  handsFree?: boolean;
+  /** Any change to this number opens the mic again. */
+  listenSignal?: number;
 }
 
 export function Composer({
@@ -26,10 +30,21 @@ export function Composer({
   disabled,
   autoListen,
   voiceEnabled,
+  handsFree,
+  listenSignal = 0,
 }: ComposerProps) {
   const [listening, setListening] = useState(false);
   const stopRef = useRef<(() => void) | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /* Dictation callbacks outlive the render that created them, so they read the
+     current props from refs rather than closing over stale ones. */
+  const handsFreeRef = useRef(handsFree);
+  const submitRef = useRef(onSubmit);
+  useEffect(() => {
+    handsFreeRef.current = handsFree;
+    submitRef.current = onSubmit;
+  });
 
   const voiceReady = useSyncExternalStore(noopSubscribe, isVoiceSupported, returnFalse);
 
@@ -49,8 +64,13 @@ export function Composer({
     const stop = startDictation({
       onPartial: onChange,
       onFinal: (transcript) => {
-        onChange(transcript);
         haptic("success");
+        if (handsFreeRef.current) {
+          onChange("");
+          submitRef.current(transcript);
+        } else {
+          onChange(transcript);
+        }
       },
       onEnd: () => {
         setListening(false);
@@ -72,6 +92,13 @@ export function Composer({
     const id = window.setTimeout(() => beginListening(), 0);
     return () => window.clearTimeout(id);
   }, [autoListen, voiceReady, voiceEnabled, beginListening]);
+
+  /* The assistant re-opens the mic after it finishes speaking. */
+  useEffect(() => {
+    if (listenSignal === 0 || !voiceReady || !voiceEnabled || stopRef.current) return;
+    const id = window.setTimeout(() => beginListening(), 260);
+    return () => window.clearTimeout(id);
+  }, [listenSignal, voiceReady, voiceEnabled, beginListening]);
 
   useEffect(() => () => stopRef.current?.(), []);
 

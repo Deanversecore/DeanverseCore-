@@ -2,19 +2,23 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, RotateCcw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ChevronLeft, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useStore, selectData } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { createId } from "@/lib/id";
 import { respond, DEFAULT_SUGGESTIONS } from "@/lib/ai/engine";
 import { interpret } from "@/lib/ai/nlu";
 import { enhanceReply } from "@/lib/ai/client";
+import { isSpeechOutputSupported, speak, stopSpeaking } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { MessageBubble, ThinkingBubble } from "@/components/ai/MessageBubble";
 import { Composer } from "@/components/ai/Composer";
 import { Skeleton } from "@/components/ui/Primitives";
 import { LogoMark } from "@/components/ui/Logo";
+
+const noopSubscribe = () => () => {};
+const returnFalse = () => false;
 
 export function AssistantScreen() {
   const router = useRouter();
@@ -26,17 +30,25 @@ export function AssistantScreen() {
   const appendMessage = useStore((state) => state.appendMessage);
   const clearMessages = useStore((state) => state.clearMessages);
   const applyEffects = useStore((state) => state.applyEffects);
+  const updateProfile = useStore((state) => state.updateProfile);
   const voiceEnabled = useStore((state) => state.profile.voiceEnabled);
+  const spokenRepliesEnabled = useStore((state) => state.profile.spokenRepliesEnabled);
+  const handsFreeEnabled = useStore((state) => state.profile.handsFreeEnabled);
 
   const [draft, setDraft] = useState(() => params.get("draft") ?? "");
   const [thinking, setThinking] = useState(false);
+  const [listenSignal, setListenSignal] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const handledDeepLink = useRef(false);
+
+  const speechReady = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
 
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
+
+      stopSpeaking();
 
       const now = new Date();
       appendMessage({
@@ -59,17 +71,36 @@ export function AssistantScreen() {
 
       setThinking(false);
       haptic(outcome.receipts.length > 0 ? "success" : "tap");
+
+      const reply = enhanced ?? outcome.text;
+      const id = createId("msg");
       appendMessage({
-        id: createId("msg"),
+        id,
         role: "assistant",
-        content: enhanced ?? outcome.text,
+        content: reply,
         createdAt: new Date().toISOString(),
         receipts: outcome.receipts,
         suggestions: outcome.suggestions,
       });
+
+      const { profile } = useStore.getState();
+      if (profile.spokenRepliesEnabled) {
+        void speak(id, reply, {
+          voiceURI: profile.voiceURI,
+          /* Hands-free turns this into a conversation: it listens again once it
+             has finished its turn, so nothing has to be tapped. */
+          onDone: () => {
+            if (profile.handsFreeEnabled && profile.voiceEnabled) {
+              setListenSignal((value) => value + 1);
+            }
+          },
+        });
+      }
     },
     [appendMessage, applyEffects],
   );
+
+  useEffect(() => () => stopSpeaking(), []);
 
   /* A question passed in the URL is answered as soon as the workspace is ready. */
   useEffect(() => {
@@ -116,15 +147,41 @@ export function AssistantScreen() {
             <p className="admin-heading-serif truncate text-[0.9375rem] text-white">DeanVerse AI</p>
             <p className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-white/40">
               <span className="h-1.5 w-1.5 rounded-full bg-[#6f8f72]" />
-              Connected to your workspace
+              {handsFreeEnabled && spokenRepliesEnabled
+                ? "Hands-free conversation"
+                : "Connected to your workspace"}
             </p>
           </div>
         </div>
+
+        {speechReady ? (
+          <button
+            type="button"
+            onClick={() => {
+              haptic("select");
+              if (spokenRepliesEnabled) stopSpeaking();
+              updateProfile({ spokenRepliesEnabled: !spokenRepliesEnabled });
+            }}
+            aria-label={spokenRepliesEnabled ? "Mute spoken replies" : "Let the assistant speak"}
+            aria-pressed={spokenRepliesEnabled}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors"
+            style={{
+              borderColor: spokenRepliesEnabled
+                ? "color-mix(in srgb, var(--admin-gold) 46%, transparent)"
+                : "#ffffff1a",
+              background: spokenRepliesEnabled ? "var(--admin-gold-soft)" : "transparent",
+              color: spokenRepliesEnabled ? "var(--admin-gold-light)" : "#ffffff73",
+            }}
+          >
+            {spokenRepliesEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+          </button>
+        ) : null}
 
         <button
           type="button"
           onClick={() => {
             haptic("tap");
+            stopSpeaking();
             clearMessages();
           }}
           aria-label="Start a new conversation"
@@ -182,6 +239,8 @@ export function AssistantScreen() {
           disabled={thinking}
           autoListen={params.get("listen") === "1"}
           voiceEnabled={voiceEnabled}
+          handsFree={handsFreeEnabled}
+          listenSignal={listenSignal}
         />
       </div>
     </div>

@@ -131,7 +131,12 @@ export interface UserProfile {
   workdayEndHour: number;
   proactiveEnabled: boolean;
   voiceEnabled: boolean;
+  spokenRepliesEnabled: boolean;
+  handsFreeEnabled: boolean;
+  /** Browser voice chosen for spoken replies, or null for the system default. */
+  voiceURI: string | null;
   hapticsEnabled: boolean;
+  onboardedAt: string | null;
 }
 
 export interface AppData {

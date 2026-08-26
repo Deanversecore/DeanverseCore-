@@ -6,24 +6,31 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { BottomNav } from "@/components/shell/BottomNav";
+import { Onboarding } from "@/components/shell/Onboarding";
 import { useStore } from "@/lib/store";
+import { useCloudSync } from "@/lib/supabase/useCloudSync";
 import { haptic, setHapticsEnabled } from "@/lib/haptics";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const hydrated = useStore((state) => state.hydrated);
-  const seeded = useStore((state) => state.seeded);
-  const bootstrap = useStore((state) => state.bootstrap);
+  const onboardedAt = useStore((state) => state.profile.onboardedAt);
   const hapticsEnabled = useStore((state) => state.profile.hapticsEnabled);
 
-  useEffect(() => {
-    if (hydrated && !seeded) bootstrap();
-  }, [hydrated, seeded, bootstrap]);
+  useCloudSync();
 
   useEffect(() => {
     setHapticsEnabled(hapticsEnabled);
   }, [hapticsEnabled]);
+
+  if (hydrated && !onboardedAt) {
+    return (
+      <div className="relative z-10 mx-auto w-full max-w-lg">
+        <Onboarding />
+      </div>
+    );
+  }
 
   const showAssistantButton = pathname !== "/ai";
 

@@ -18,18 +18,29 @@ import type {
   UserProfile,
 } from "@/lib/types";
 import { createId } from "@/lib/id";
-import { emptyData, seedData } from "@/lib/seed";
+import { emptyData } from "@/lib/seed";
 import type { Effect } from "@/lib/ai/engine";
 import { isSameDay } from "@/lib/date";
+import type { SyncSession } from "@/lib/supabase/sync";
 
 const STORAGE_KEY = "deanverse-ai:v1";
 
+export type SyncStatus = "unconfigured" | "signed-out" | "connecting" | "synced" | "syncing" | "error";
+
+export interface SyncState {
+  status: SyncStatus;
+  session: SyncSession | null;
+  lastSyncedAt: string | null;
+  message: string | null;
+}
+
 interface StoreState extends AppData {
   hydrated: boolean;
-  seeded: boolean;
+  sync: SyncState;
   setHydrated: () => void;
-  bootstrap: () => void;
-  reset: (withSeed: boolean) => void;
+  reset: () => void;
+  replaceWorkspace: (data: AppData) => void;
+  setSync: (changes: Partial<SyncState>) => void;
 
   addTask: (input: Partial<Task> & { title: string }) => Task;
   updateTask: (id: string, changes: Partial<Task>) => void;
@@ -81,18 +92,19 @@ export const useStore = create<StoreState>()(
     (set, get) => ({
       ...emptyData(),
       hydrated: false,
-      seeded: false,
+      sync: { status: "unconfigured", session: null, lastSyncedAt: null, message: null },
 
       setHydrated: () => set({ hydrated: true }),
 
-      bootstrap: () => {
-        if (get().seeded) return;
-        set({ ...seedData(new Date()), seeded: true, hydrated: true });
+      reset: () => {
+        const { profile } = get();
+        set({ ...emptyData(), profile, hydrated: true });
       },
 
-      reset: (withSeed) => {
-        set({ ...(withSeed ? seedData(new Date()) : emptyData()), seeded: true, hydrated: true });
-      },
+      /** Adopts a workspace pulled from the account, keeping local-only state. */
+      replaceWorkspace: (data) => set({ ...data }),
+
+      setSync: (changes) => set((state) => ({ sync: { ...state.sync, ...changes } })),
 
       // ------------------------------------------------------------- tasks
       addTask: (input) => {
@@ -348,7 +360,13 @@ export const useStore = create<StoreState>()(
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      /**
+       * Version 1 shipped with a demo workspace nobody typed. There is no way to
+       * tell those records apart from real ones, so the upgrade starts clean and
+       * onboarding runs again.
+       */
+      migrate: () => emptyData(),
       partialize: (state) => ({
         profile: state.profile,
         tasks: state.tasks,
@@ -361,7 +379,6 @@ export const useStore = create<StoreState>()(
         followUps: state.followUps,
         messages: state.messages,
         dismissedInsights: state.dismissedInsights,
-        seeded: state.seeded,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();

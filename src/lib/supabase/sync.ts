@@ -32,12 +32,59 @@ export async function signOut(): Promise<void> {
   await getSupabase()?.auth.signOut();
 }
 
-export async function pullWorkspace(userId: string): Promise<AppData | null> {
+/**
+ * Reports sign-in and sign-out as they happen, including the session Supabase
+ * recovers from a magic-link redirect.
+ */
+export function onAuthChange(handler: (session: SyncSession | null) => void): () => void {
   const supabase = getSupabase();
-  if (!supabase) return null;
-  const { data, error } = await supabase.from(TABLE).select("data").eq("user_id", userId).maybeSingle();
-  if (error || !data?.data) return null;
-  return data.data as AppData;
+  if (!supabase) return () => {};
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    handler(session ? { userId: session.user.id, email: session.user.email ?? null } : null);
+  });
+  return () => data.subscription.unsubscribe();
+}
+
+/** Streams workspace writes made on your other devices. */
+export function subscribeWorkspace(
+  userId: string,
+  handler: (data: AppData) => void,
+): () => void {
+  const supabase = getSupabase();
+  if (!supabase) return () => {};
+
+  const channel = supabase
+    .channel(`workspace:${userId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: TABLE, filter: `user_id=eq.${userId}` },
+      (payload) => {
+        const row = payload.new as { data?: AppData } | null;
+        if (row?.data) handler(row.data);
+      },
+    )
+    .subscribe();
+
+  return () => {
+    void supabase.removeChannel(channel);
+  };
+}
+
+export interface PullResult {
+  data: AppData | null;
+  error: string | null;
+}
+
+export async function pullWorkspace(userId: string): Promise<PullResult> {
+  const supabase = getSupabase();
+  if (!supabase) return { data: null, error: "Supabase is not configured." };
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("data")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return { data: null, error: error.message };
+  return { data: (data?.data as AppData | undefined) ?? null, error: null };
 }
 
 export async function pushWorkspace(userId: string, data: AppData): Promise<{ error: string | null }> {

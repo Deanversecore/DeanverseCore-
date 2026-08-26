@@ -1,14 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { CloudOff, CloudUpload, LogOut, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
-import { useStore, selectData } from "@/lib/store";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { CloudOff, LogOut, RefreshCw, ShieldCheck, Trash2, Volume2 } from "lucide-react";
+import { useStore, selectData, type SyncStatus } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { getSession, pullWorkspace, pushWorkspace, signInWithEmail, signOut, type SyncSession } from "@/lib/supabase/sync";
+import { pushWorkspace, signInWithEmail, signOut } from "@/lib/supabase/sync";
+import {
+  isSpeechOutputSupported,
+  listVoices,
+  speak,
+  stopSpeaking,
+  subscribeVoices,
+} from "@/lib/voice";
+import { formatClock } from "@/lib/date";
 import { Eyebrow, Panel, Skeleton, cx } from "@/components/ui/Primitives";
 import { SubPage } from "@/components/more/SubPage";
 import { haptic } from "@/lib/haptics";
+
+const noopSubscribe = () => () => {};
+const returnFalse = () => false;
 
 export default function SettingsPage() {
   const mounted = useMounted();
@@ -16,35 +27,19 @@ export default function SettingsPage() {
   const profile = useStore((state) => state.profile);
   const updateProfile = useStore((state) => state.updateProfile);
   const reset = useStore((state) => state.reset);
+  const sync = useStore((state) => state.sync);
 
-  const [session, setSession] = useState<SyncSession | null>(null);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    void getSession().then(setSession);
-  }, []);
+  const session = sync.session;
 
-  const push = useCallback(async () => {
+  const backUpNow = useCallback(async () => {
     if (!session) return;
     setBusy(true);
     const { error } = await pushWorkspace(session.userId, selectData(useStore.getState()));
-    setStatus(error ?? "Workspace backed up.");
-    setBusy(false);
-  }, [session]);
-
-  const pull = useCallback(async () => {
-    if (!session) return;
-    setBusy(true);
-    const remote = await pullWorkspace(session.userId);
-    if (remote) {
-      useStore.setState({ ...remote, seeded: true });
-      setStatus("Workspace restored from your account.");
-    } else {
-      setStatus("Nothing stored in the cloud yet.");
-    }
+    setStatus(error ?? "Workspace pushed to your account.");
     setBusy(false);
   }, [session]);
 
@@ -133,6 +128,17 @@ export default function SettingsPage() {
           </div>
         </Panel>
 
+        <VoicePanel />
+
+        <Panel className="p-5">
+          <Eyebrow>Timezone</Eyebrow>
+          <p className="mt-2.5 text-[0.75rem] leading-relaxed text-white/55">
+            {profile.timezoneLabel
+              ? `Planning around ${profile.timezoneLabel}.`
+              : "No timezone detected on this device."}
+          </p>
+        </Panel>
+
         <Panel className="p-5">
           <div className="flex items-center gap-2">
             <ShieldCheck size={13} className="text-[color:var(--admin-emerald)]" />
@@ -152,22 +158,27 @@ export default function SettingsPage() {
               <p className="text-[0.75rem] text-white/55">
                 Signed in as <span className="text-white/85">{session.email}</span>
               </p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button type="button" onClick={push} disabled={busy} className="admin-btn-ghost">
-                  <CloudUpload size={15} />
-                  Back up
-                </button>
-                <button type="button" onClick={pull} disabled={busy} className="admin-btn-ghost">
-                  <RefreshCw size={15} />
-                  Restore
-                </button>
-              </div>
+              <p className="mt-1.5 flex items-center gap-2 text-[0.6875rem] text-white/45">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ background: sync.status === "error" ? "#c45c5c" : "#6f8f72" }}
+                />
+                {syncLabel(sync.status, sync.lastSyncedAt, sync.message)}
+              </p>
+              <button
+                type="button"
+                onClick={backUpNow}
+                disabled={busy}
+                className="admin-btn-ghost mt-3 w-full"
+              >
+                <RefreshCw size={15} />
+                Sync now
+              </button>
               <button
                 type="button"
                 onClick={async () => {
                   await signOut();
-                  setSession(null);
-                  setStatus("Signed out.");
+                  setStatus("Signed out. This device keeps its own copy.");
                 }}
                 className="admin-btn-ghost mt-2 w-full"
               >
@@ -178,8 +189,9 @@ export default function SettingsPage() {
           ) : (
             <div className="mt-3">
               <p className="text-[0.75rem] leading-relaxed text-white/55">
-                Sign in with a magic link to carry your workspace across devices. Your rows are readable
-                only by you.
+                Sign in with a magic link and your workspace syncs itself from then on — every edit
+                pushes automatically and changes from your other devices arrive live. Your rows are
+                readable only by you.
               </p>
               <div className="mt-3 flex gap-2">
                 <input
@@ -218,35 +230,23 @@ export default function SettingsPage() {
         <Panel className="p-5">
           <Eyebrow>Workspace data</Eyebrow>
           <p className="mt-2.5 text-[0.75rem] leading-relaxed text-white/55">
-            Reset clears everything on this device. Sample data gives you a populated workspace to explore.
+            Everything here is what you captured — there is no sample content to fall back on.
+            Clearing removes every task, event, note, and memory on this device, and on your account
+            if sync is on.
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                haptic("warning");
-                reset(true);
-                setStatus("Sample workspace loaded.");
-              }}
-              className="admin-btn-ghost"
-            >
-              <RefreshCw size={15} />
-              Sample data
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                haptic("warning");
-                reset(false);
-                setStatus("Workspace cleared.");
-              }}
-              className="admin-btn-ghost"
-              style={{ color: "var(--admin-danger)", borderColor: "#c45c5c3d" }}
-            >
-              <Trash2 size={15} />
-              Clear all
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              haptic("warning");
+              reset();
+              setStatus("Workspace cleared.");
+            }}
+            className="admin-btn-ghost mt-3 w-full"
+            style={{ color: "var(--admin-danger)", borderColor: "#c45c5c3d" }}
+          >
+            <Trash2 size={15} />
+            Clear everything
+          </button>
         </Panel>
 
         <p className="pb-4 text-center text-[0.625rem] text-white/25">
@@ -260,6 +260,106 @@ export default function SettingsPage() {
 function clampHour(value: number): number {
   if (Number.isNaN(value)) return 9;
   return Math.min(23, Math.max(0, Math.round(value)));
+}
+
+function syncLabel(status: SyncStatus, lastSyncedAt: string | null, message: string | null): string {
+  if (status === "error") return message ?? "Sync failed.";
+  if (status === "syncing") return "Syncing…";
+  if (status === "connecting") return "Connecting…";
+  if (lastSyncedAt) return `Synced at ${formatClock(new Date(lastSyncedAt))}`;
+  return "Waiting for the first change.";
+}
+
+/** Spoken replies, plus whichever voices this device actually has. */
+function VoicePanel() {
+  const profile = useStore((state) => state.profile);
+  const updateProfile = useStore((state) => state.updateProfile);
+  const supported = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
+  const [voices, setVoices] = useState<{ uri: string; label: string }[]>([]);
+
+  useEffect(() => {
+    if (!supported) return;
+    const read = () =>
+      setVoices(
+        listVoices().map((voice) => ({ uri: voice.voiceURI, label: `${voice.name} (${voice.lang})` })),
+      );
+    read();
+    return subscribeVoices(read);
+  }, [supported]);
+
+  useEffect(() => () => stopSpeaking(), []);
+
+  if (!supported) return null;
+
+  return (
+    <Panel className="p-5">
+      <div className="flex items-center gap-2">
+        <Volume2 size={13} className="text-[color:var(--admin-gold)]" />
+        <Eyebrow>Assistant voice</Eyebrow>
+      </div>
+
+      <div className="mt-2 flex flex-col divide-y divide-white/[0.06]">
+        <Toggle
+          label="Spoken replies"
+          description="The assistant reads its answers out loud"
+          checked={profile.spokenRepliesEnabled}
+          onChange={(value) => {
+            if (!value) stopSpeaking();
+            updateProfile({ spokenRepliesEnabled: value });
+          }}
+        />
+        <Toggle
+          label="Hands-free conversation"
+          description="It listens again as soon as it finishes speaking"
+          checked={profile.handsFreeEnabled}
+          onChange={(value) => updateProfile({ handsFreeEnabled: value })}
+        />
+      </div>
+
+      {voices.length > 0 ? (
+        <div className="mt-4">
+          <label htmlFor="assistant-voice" className="mb-1.5 block text-[0.6875rem] text-white/45">
+            Voice
+          </label>
+          <select
+            id="assistant-voice"
+            name="voice"
+            className="admin-input"
+            value={profile.voiceURI ?? ""}
+            onChange={(event) => updateProfile({ voiceURI: event.target.value || null })}
+          >
+            <option value="">System default</option>
+            {voices.map((voice) => (
+              <option key={voice.uri} value={voice.uri}>
+                {voice.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => {
+          haptic("tap");
+          void speak(
+            "settings-preview",
+            `Hello ${profile.name || "there"}. This is how I'll sound when I read your day back to you.`,
+            { voiceURI: profile.voiceURI },
+          );
+        }}
+        className="admin-btn-ghost mt-4 w-full"
+      >
+        <Volume2 size={15} />
+        Hear the voice
+      </button>
+
+      <p className="mt-3 text-[0.625rem] leading-relaxed text-white/30">
+        A server voice key gives a richer voice; without one your device&apos;s own speech engine is
+        used.
+      </p>
+    </Panel>
+  );
 }
 
 function Toggle({

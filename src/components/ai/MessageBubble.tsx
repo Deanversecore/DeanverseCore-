@@ -1,10 +1,34 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BellRing, CalendarPlus, ClipboardList, NotebookPen, Sparkles, Target, UserRound } from "lucide-react";
+import { useSyncExternalStore } from "react";
+import {
+  BellRing,
+  CalendarPlus,
+  ClipboardList,
+  NotebookPen,
+  Sparkles,
+  Square,
+  Target,
+  UserRound,
+  Volume2,
+} from "lucide-react";
 import type { ActionReceipt, ChatMessage, EntityKind } from "@/lib/types";
+import { useStore } from "@/lib/store";
+import {
+  getSpeakingId,
+  isSpeechOutputSupported,
+  speak,
+  stopSpeaking,
+  subscribeSpeech,
+} from "@/lib/voice";
+import { haptic } from "@/lib/haptics";
 import { LogoMark } from "@/components/ui/Logo";
 import { cx } from "@/components/ui/Primitives";
+
+const noopSubscribe = () => () => {};
+const returnFalse = () => false;
+const returnNull = () => null;
 
 const RECEIPT_ICON: Record<EntityKind, typeof ClipboardList> = {
   task: ClipboardList,
@@ -134,8 +158,37 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
             <Receipts receipts={message.receipts} />
           ) : null}
         </div>
+        <PlaybackButton message={message} />
       </div>
     </motion.div>
+  );
+}
+
+/** Replays any answer out loud, whether or not spoken replies are on. */
+function PlaybackButton({ message }: { message: ChatMessage }) {
+  const voiceURI = useStore((state) => state.profile.voiceURI);
+  const supported = useSyncExternalStore(noopSubscribe, isSpeechOutputSupported, returnFalse);
+  const speakingId = useSyncExternalStore(subscribeSpeech, getSpeakingId, returnNull);
+
+  if (!supported) return null;
+  const speaking = speakingId === message.id;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        haptic("tap");
+        if (speaking) stopSpeaking();
+        else void speak(message.id, message.content, { voiceURI });
+      }}
+      aria-label={speaking ? "Stop reading this out loud" : "Read this out loud"}
+      aria-pressed={speaking}
+      className="mt-1.5 flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[0.625rem] font-semibold text-white/40 transition-colors active:bg-white/[0.06]"
+      style={speaking ? { color: "var(--admin-gold-light)" } : undefined}
+    >
+      {speaking ? <Square size={10} fill="currentColor" /> : <Volume2 size={12} />}
+      {speaking ? "Stop" : "Listen"}
+    </button>
   );
 }
 

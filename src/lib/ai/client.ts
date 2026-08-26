@@ -1,17 +1,19 @@
 "use client";
 
-const ENHANCEMENT_ENABLED = process.env.NEXT_PUBLIC_AI_ENHANCE === "1";
+/** Set once the server tells us no key is configured, so we stop asking. */
+let enhancementAvailable: boolean | null = null;
 
 /**
- * Optional LLM polish over the locally computed answer. Failures are silent —
- * the deterministic reply is always what the user already has in hand.
+ * Optional LLM polish over the locally computed answer. It turns itself on as
+ * soon as the server has a key, and failures are silent — the deterministic
+ * reply is always what the user already has in hand.
  */
 export async function enhanceReply(
   utterance: string,
   intent: string,
   reply: string,
 ): Promise<string | null> {
-  if (!ENHANCEMENT_ENABLED) return null;
+  if (enhancementAvailable === false) return null;
 
   try {
     const response = await fetch("/api/ai", {
@@ -20,7 +22,18 @@ export async function enhanceReply(
       body: JSON.stringify({ utterance, intent, reply }),
     });
     if (!response.ok) return null;
-    const payload = (await response.json()) as { enhanced?: boolean; text?: string };
+
+    const payload = (await response.json()) as {
+      enhanced?: boolean;
+      text?: string;
+      reason?: string;
+    };
+    if (payload.reason === "not_configured") {
+      enhancementAvailable = false;
+      return null;
+    }
+
+    enhancementAvailable = true;
     return payload.enhanced && payload.text ? payload.text : null;
   } catch {
     return null;

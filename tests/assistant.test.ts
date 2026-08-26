@@ -2,14 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { interpret } from "../src/lib/ai/nlu";
 import { respond } from "../src/lib/ai/engine";
-import { seedData } from "../src/lib/seed";
+import { testWorkspace } from "./fixture";
+import { emptyData } from "../src/lib/seed";
+import { toSpokenText } from "../src/lib/voice";
 import type { AppData } from "../src/lib/types";
 
 /* A fixed Wednesday so weekday and "tomorrow" maths are deterministic. */
 const NOW = new Date("2026-08-26T10:00:00");
 
 function workspace(): AppData {
-  return seedData(NOW);
+  return testWorkspace(NOW);
 }
 
 test("captures a reminder with a natural date", () => {
@@ -123,4 +125,29 @@ test("unrecognised input still offers a useful next step", () => {
   const result = respond("asdfgh qwerty", data, NOW);
   assert.equal(result.effects.length, 0);
   assert.ok(result.suggestions.length > 0);
+});
+
+test("an empty workspace answers honestly instead of inventing work", () => {
+  const data = emptyData();
+
+  assert.match(respond("What am I forgetting?", data, NOW).text, /Nothing's slipping/);
+  assert.match(respond("What's important today?", data, NOW).text, /Nothing is fighting/);
+  assert.match(respond("Who do I need to follow up with?", data, NOW).text, /No one is waiting/);
+  assert.match(respond("Plan my day", data, NOW).text, /nothing pressing/);
+});
+
+test("a fresh profile carries no identity until onboarding fills it in", () => {
+  const { profile } = emptyData();
+  assert.equal(profile.name, "");
+  assert.equal(profile.timezoneLabel, "");
+  assert.equal(profile.onboardedAt, null);
+});
+
+test("spoken text drops the markup the screen renders", () => {
+  const spoken = toSpokenText("**Overdue** — 2 items\n• Invoice SoCal Appliance\n1. Call John");
+  assert.ok(!spoken.includes("**"));
+  assert.ok(!spoken.includes("•"));
+  assert.match(spoken, /Overdue, 2 items/);
+  assert.match(spoken, /Invoice SoCal Appliance/);
+  assert.match(spoken, /1, Call John/);
 });
