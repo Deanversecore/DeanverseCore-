@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Plus, Target, Trash2 } from "lucide-react";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { formatDayLabel, parseNaturalDate } from "@/lib/date";
 import { Chip, EmptyState, Panel, ProgressBar, Skeleton, cx } from "@/components/ui/Primitives";
@@ -14,7 +14,7 @@ import { haptic } from "@/lib/haptics";
 export default function GoalsPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const addGoal = useStore((state) => state.addGoal);
   const removeGoal = useStore((state) => state.removeGoal);
   const toggleMilestone = useStore((state) => state.toggleMilestone);

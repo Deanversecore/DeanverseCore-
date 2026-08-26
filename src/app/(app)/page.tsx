@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { BriefingCard } from "@/components/home/BriefingCard";
@@ -19,7 +19,7 @@ import { SkeletonPanel, Skeleton } from "@/components/ui/Primitives";
 export default function HomePage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const now = useNow();
 
   if (!mounted || !hydrated) return <DashboardSkeleton />;

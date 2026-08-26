@@ -7,6 +7,9 @@ import { isVoiceSupported, startDictation } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { cx } from "@/components/ui/Primitives";
 
+const noopSubscribe = () => () => {};
+const returnFalse = () => false;
+
 interface ComposerProps {
   value: string;
   onChange: (value: string) => void;
@@ -28,11 +31,7 @@ export function Composer({
   const stopRef = useRef<(() => void) | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const voiceReady = useSyncExternalStore(
-    () => () => {},
-    () => isVoiceSupported(),
-    () => false,
-  );
+  const voiceReady = useSyncExternalStore(noopSubscribe, isVoiceSupported, returnFalse);
 
   useEffect(() => {
     const el = textareaRef.current;

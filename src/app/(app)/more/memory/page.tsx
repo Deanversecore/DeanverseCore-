@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Brain, Plus, Trash2 } from "lucide-react";
 import type { MemoryKind } from "@/lib/types";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { formatDayLabel } from "@/lib/date";
 import { Chip, EmptyState, Panel, Skeleton, cx } from "@/components/ui/Primitives";
@@ -17,7 +17,7 @@ const KINDS: MemoryKind[] = ["fact", "preference", "person", "project"];
 export default function MemoryPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const addMemory = useStore((state) => state.addMemory);
   const removeMemory = useStore((state) => state.removeMemory);
 

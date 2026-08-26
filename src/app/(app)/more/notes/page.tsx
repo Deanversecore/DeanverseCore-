@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NotebookPen, Pin, Plus, Trash2 } from "lucide-react";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { formatDayLabel } from "@/lib/date";
 import { Chip, EmptyState, Skeleton, cx } from "@/components/ui/Primitives";
@@ -14,7 +14,7 @@ import { haptic } from "@/lib/haptics";
 export default function NotesPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const updateNote = useStore((state) => state.updateNote);
   const removeNote = useStore((state) => state.removeNote);
   const addNote = useStore((state) => state.addNote);

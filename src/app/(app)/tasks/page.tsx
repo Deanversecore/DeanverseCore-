@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ListChecks, Plus } from "lucide-react";
 import type { Priority, Task } from "@/lib/types";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { byDue } from "@/lib/selectors";
 import { isSameDay, parseNaturalDate, startOfDay } from "@/lib/date";
@@ -21,7 +21,7 @@ const PRIORITIES: Priority[] = ["low", "normal", "high", "critical"];
 export default function TasksPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const toggleTask = useStore((state) => state.toggleTask);
   const removeTask = useStore((state) => state.removeTask);
   const now = useNow();

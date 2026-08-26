@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Mail, MessageSquare, Phone, Plus, Trash2, Users } from "lucide-react";
 import type { FollowUpChannel } from "@/lib/types";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { formatDayLabel, parseNaturalDate, relativeFromNow } from "@/lib/date";
 import { Chip, EmptyState, Skeleton, cx } from "@/components/ui/Primitives";
@@ -22,7 +22,7 @@ const CHANNELS: Array<{ value: FollowUpChannel; icon: typeof Phone }> = [
 export default function FollowUpsPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const addFollowUp = useStore((state) => state.addFollowUp);
   const toggleFollowUp = useStore((state) => state.toggleFollowUp);
   const removeFollowUp = useStore((state) => state.removeFollowUp);

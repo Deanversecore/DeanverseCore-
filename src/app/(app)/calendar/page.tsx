@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { CalendarPlus, Plus } from "lucide-react";
 import type { EventKind } from "@/lib/types";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { eventsOnDay } from "@/lib/selectors";
 import { addDays, format, isSameDay, parseNaturalDate, startOfDay } from "@/lib/date";
@@ -20,7 +20,7 @@ const STRIP_LENGTH = 14;
 export default function CalendarPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const toggleTask = useStore((state) => state.toggleTask);
   const now = useNow();
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Flame, Plus, Repeat, Trash2 } from "lucide-react";
 import type { TimeOfDay } from "@/lib/types";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { isRoutineDoneToday } from "@/lib/selectors";
 import { WEEKDAYS } from "@/lib/date";
@@ -19,7 +19,7 @@ const WEEKDAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"];
 export default function RoutinesPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const addRoutine = useStore((state) => state.addRoutine);
   const removeRoutine = useStore((state) => state.removeRoutine);
   const completeRoutine = useStore((state) => state.completeRoutine);

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { useShallow } from "zustand/react/shallow";
 import type {
   AppData,
   CalendarEvent,
@@ -368,6 +369,15 @@ export const useStore = create<StoreState>()(
     },
   ),
 );
+
+/**
+ * Reading the whole workspace in a component needs a shallow comparison —
+ * selectData builds a fresh wrapper object on every call, which would otherwise
+ * look like a new snapshot to useSyncExternalStore on each render.
+ */
+export function useAppData(): AppData {
+  return useStore(useShallow(selectData));
+}
 
 export function selectData(state: StoreState): AppData {
   return {

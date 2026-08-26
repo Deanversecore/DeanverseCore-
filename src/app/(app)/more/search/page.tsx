@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Brain, CalendarDays, ClipboardList, NotebookPen, Search, Target, UserRound } from "lucide-react";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted } from "@/lib/hooks";
 import { searchAll } from "@/lib/selectors";
 import { formatDayLabel, formatDueLabel } from "@/lib/date";
@@ -13,7 +13,7 @@ import { SubPage } from "@/components/more/SubPage";
 export default function SearchPage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => searchAll(data, query), [data, query]);

@@ -12,7 +12,7 @@ import {
   Target,
   UserRound,
 } from "lucide-react";
-import { useStore, selectData } from "@/lib/store";
+import { useAppData, useStore } from "@/lib/store";
 import { useMounted, useNow } from "@/lib/hooks";
 import { openFollowUps } from "@/lib/selectors";
 import { Eyebrow, Panel, Skeleton } from "@/components/ui/Primitives";
@@ -23,7 +23,7 @@ import { haptic } from "@/lib/haptics";
 export default function MorePage() {
   const mounted = useMounted();
   const hydrated = useStore((state) => state.hydrated);
-  const data = useStore(selectData);
+  const data = useAppData();
   const now = useNow(60_000);
 
   if (!mounted || !hydrated) return <MoreSkeleton />;
