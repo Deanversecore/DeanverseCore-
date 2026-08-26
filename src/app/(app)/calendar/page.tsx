@@ -109,7 +109,7 @@ export default function CalendarPage() {
                 {isSameDay(selected, now) ? "Today" : format(selected, "EEEE, MMM d")}
               </h2>
             </div>
-            <span className="pb-1 text-[0.6875rem] text-white/35">
+            <span className="pb-1 text-[0.6875rem] text-white/70">
               {dayEvents.length + dayTasks.length} items
             </span>
           </div>
