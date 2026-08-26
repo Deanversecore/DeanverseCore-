@@ -90,12 +90,12 @@
 }
 
 html {
-  background: var(--admin-bg);
+  background: var(--background);
   color-scheme: dark;
 }
 
 body {
-  background: var(--admin-bg);
+  background: var(--background);
   color: var(--admin-text);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -109,10 +109,10 @@ body {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(78vw 46vh at 50% -12%, #6f8f7226 0%, transparent 62%),
-    radial-gradient(64vw 40vh at 108% 8%, #c9a9621a 0%, transparent 60%),
-    radial-gradient(90vw 52vh at -12% 96%, #2f5d5029 0%, transparent 64%),
-    linear-gradient(180deg, var(--admin-bg) 0%, var(--admin-bg-secondary) 100%);
+    radial-gradient(78vw 46vh at 50% -12%, #6f8f7233 0%, transparent 62%),
+    radial-gradient(64vw 40vh at 108% 8%, #c9a96224 0%, transparent 60%),
+    radial-gradient(90vw 52vh at -12% 96%, #2f5d5038 0%, transparent 64%),
+    linear-gradient(180deg, #0f1a17 0%, #0a1210 100%);
 }
 
 ::selection {
@@ -327,7 +327,7 @@ body {
 }
 
 .app-topbar {
-  background: color-mix(in srgb, var(--admin-bg) 72%, transparent);
+  background: color-mix(in srgb, #0f1a17 78%, transparent);
   border-bottom: 1px solid var(--admin-hairline);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);

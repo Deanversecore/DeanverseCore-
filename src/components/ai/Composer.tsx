@@ -89,7 +89,7 @@ export function Composer({
     <div
       className="sticky bottom-0 px-3 pb-2 pt-2"
       style={{
-        background: "linear-gradient(180deg, transparent, var(--admin-bg) 32%)",
+        background: "linear-gradient(180deg, transparent, #0a1210 32%)",
       }}
     >
       <div

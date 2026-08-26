@@ -153,7 +153,7 @@ export function AssistantScreen() {
 
       <div
         className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-1"
-        style={{ background: "linear-gradient(180deg, transparent, var(--admin-bg) 70%)" }}
+        style={{ background: "linear-gradient(180deg, transparent, #0a1210 70%)" }}
       >
         <AnimatePresence initial={false}>
           {suggestions.map((suggestion) => (
