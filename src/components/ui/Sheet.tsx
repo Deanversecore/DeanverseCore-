@@ -33,7 +33,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <motion.button
             type="button"
-            aria-label="Close"
+            aria-label="Dismiss"
             className="absolute inset-0 bg-black/65 backdrop-blur-[3px]"
             initial={false}
             animate={{ opacity: 1 }}

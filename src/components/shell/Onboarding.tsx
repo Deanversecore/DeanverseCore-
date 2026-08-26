@@ -144,7 +144,7 @@ export function Onboarding() {
           <ArrowRight size={16} />
         </button>
 
-        <p className="mt-4 text-center text-[0.625rem] leading-relaxed text-white/25">
+        <p className="mt-4 text-center text-[0.625rem] leading-relaxed text-white/55">
           Everything stays on this device until you turn on sync in settings.
         </p>
       </motion.div>
