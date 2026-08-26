@@ -162,6 +162,7 @@ export default function NotesPage() {
             </label>
             <textarea
               id="note-body"
+              name="note-body"
               rows={6}
               className="admin-input resize-none"
               value={body}

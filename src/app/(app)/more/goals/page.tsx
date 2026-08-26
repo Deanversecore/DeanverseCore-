@@ -166,6 +166,7 @@ export default function GoalsPage() {
 
                     <div className="mt-3 flex gap-2">
                       <input
+                        name="milestone-title"
                         className="admin-input h-10 py-0 text-[0.75rem]"
                         value={milestoneDrafts[goal.id] ?? ""}
                         placeholder="Add a milestone"

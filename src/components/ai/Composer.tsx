@@ -108,6 +108,7 @@ export function Composer({
       >
         <textarea
           ref={textareaRef}
+          name="assistant-message"
           rows={1}
           value={value}
           disabled={disabled}

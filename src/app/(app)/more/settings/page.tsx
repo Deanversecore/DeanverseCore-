@@ -183,6 +183,7 @@ export default function SettingsPage() {
               </p>
               <div className="mt-3 flex gap-2">
                 <input
+                  name="sync-email"
                   className="admin-input"
                   type="email"
                   value={email}

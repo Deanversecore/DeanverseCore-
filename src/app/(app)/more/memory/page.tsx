@@ -127,6 +127,7 @@ export default function MemoryPage() {
       >
         <div className="flex flex-col gap-4 pb-4">
           <textarea
+            name="memory-content"
             rows={3}
             className="admin-input resize-none"
             value={content}
