@@ -1,0 +1,18 @@
+{
+  "name": "DeanVerse AI",
+  "short_name": "DeanVerse AI",
+  "description": "DeanVerse Digital's personal AI command center.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#040a08",
+  "theme_color": "#040a08",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
