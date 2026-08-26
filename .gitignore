@@ -41,6 +41,7 @@ yarn-error.log*
 .open-next
 .dev.vars
 .wrangler
+.cf-api-stash
 cloudflare-env.d.ts
 
 # typescript

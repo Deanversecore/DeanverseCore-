@@ -1,11 +1,20 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+const staticExport = process.env.CF_STATIC === "1";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  ...(staticExport
+    ? {
+        output: "export" as const,
+        images: { unoptimized: true },
+        trailingSlash: true,
+      }
+    : {}),
 };
 
 export default nextConfig;
 
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-initOpenNextCloudflareForDev();
-
+if (!staticExport) {
+  initOpenNextCloudflareForDev();
+}
