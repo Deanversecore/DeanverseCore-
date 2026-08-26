@@ -25,6 +25,7 @@ export default function MorePage() {
   const hydrated = useStore((state) => state.hydrated);
   const data = useAppData();
   const now = useNow(60_000);
+  const syncStatus = useStore((state) => state.sync.status);
 
   if (!mounted || !hydrated) return <MoreSkeleton />;
 
@@ -151,9 +152,9 @@ export default function MorePage() {
       </nav>
 
       <p className="mt-8 px-6 text-center text-[0.6875rem] leading-relaxed text-white/25">
-        DeanVerse AI keeps your workspace on this device by default.
-        <br />
-        Enable sync in settings to carry it across devices.
+        {syncStatus === "synced" || syncStatus === "syncing"
+          ? "Your workspace is syncing to your account."
+          : "Your workspace lives on this device. Sign in from settings to carry it across devices."}
       </p>
     </div>
   );
