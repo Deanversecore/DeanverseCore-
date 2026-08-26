@@ -87,6 +87,7 @@ const speechListeners = new Set<() => void>();
 let speakingId: string | null = null;
 let activeAudio: HTMLAudioElement | null = null;
 let serverVoice: boolean | null = null;
+let watchdog: number | undefined;
 
 function notifySpeech() {
   for (const listener of speechListeners) listener();
@@ -140,6 +141,9 @@ export function toSpokenText(content: string): string {
 }
 
 export function stopSpeaking() {
+  if (typeof window === "undefined") return;
+  window.clearInterval(watchdog);
+  watchdog = undefined;
   if (activeAudio) {
     activeAudio.onended = null;
     activeAudio.onerror = null;
@@ -216,6 +220,8 @@ function speakInBrowser(id: string, text: string, voiceURI: string | null, onDon
   utterance.pitch = 1;
 
   const finish = () => {
+    window.clearInterval(watchdog);
+    watchdog = undefined;
     if (speakingId === id) {
       setSpeaking(null);
       onDone();
@@ -226,6 +232,20 @@ function speakInBrowser(id: string, text: string, voiceURI: string | null, onDon
 
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
+
+  /* A device with no installed voices can accept an utterance and then never
+     report back, which would leave the UI stuck mid-sentence. */
+  const startedAt = Date.now();
+  window.clearInterval(watchdog);
+  watchdog = window.setInterval(() => {
+    if (speakingId !== id) {
+      window.clearInterval(watchdog);
+      watchdog = undefined;
+      return;
+    }
+    const idle = !window.speechSynthesis.speaking && !window.speechSynthesis.pending;
+    if (idle && Date.now() - startedAt > 1500) finish();
+  }, 500);
 }
 
 export interface SpeakOptions {
