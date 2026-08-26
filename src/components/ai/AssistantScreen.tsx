@@ -288,7 +288,7 @@ export function AssistantScreen() {
         <VoicePresence state={presence} />
 
         {lastUser && !listening ? (
-          <p className="mt-4 max-w-[22rem] truncate text-center text-[0.75rem] text-white/35">
+          <p className="mt-4 max-w-[22rem] truncate text-center text-[0.75rem] text-white/70">
             You said “{lastUser.content}”
           </p>
         ) : null}
@@ -298,7 +298,7 @@ export function AssistantScreen() {
             {caption ? (
               <motion.p
                 key={caption}
-                initial={{ opacity: 0, y: 8 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
@@ -309,10 +309,10 @@ export function AssistantScreen() {
             ) : thinking ? (
               <motion.p
                 key="thinking"
-                initial={{ opacity: 0 }}
+                initial={false}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-center text-[0.875rem] text-white/40"
+                className="text-center text-[0.875rem] text-white/80"
               >
                 Let me think…
               </motion.p>
@@ -337,7 +337,7 @@ export function AssistantScreen() {
               key={suggestion}
               type="button"
               layout
-              initial={{ opacity: 0, scale: 0.94 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}

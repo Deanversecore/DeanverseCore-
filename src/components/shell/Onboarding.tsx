@@ -47,16 +47,12 @@ export function Onboarding() {
 
   return (
     <div className="flex min-h-dvh flex-col justify-center px-5 py-10" style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}>
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3">
           <LogoMark size={44} />
           <div className="leading-none">
             <p className="admin-eyebrow">DeanVerse AI</p>
-            <p className="mt-1.5 text-[0.6875rem] text-white/40">{formatLongDate(now)}</p>
+            <p className="mt-1.5 text-[0.6875rem] text-white/70">{formatLongDate(now)}</p>
           </div>
         </div>
 
@@ -64,7 +60,7 @@ export function Onboarding() {
           {greetingFor(now)}. Let&apos;s set up your{" "}
           <span className="text-gold-gradient">command center</span>.
         </h1>
-        <p className="mt-2.5 max-w-[20rem] text-[0.8125rem] leading-relaxed text-white/55">
+        <p className="mt-2.5 max-w-[20rem] text-[0.8125rem] leading-relaxed text-white/80">
           I talk. You talk. I turn what you say into tasks, reminders, and memory — then I keep watch.
         </p>
 
@@ -72,7 +68,7 @@ export function Onboarding() {
           <Eyebrow>Your profile</Eyebrow>
 
           <div className="mt-3.5">
-            <label htmlFor="onboarding-name" className="mb-1.5 block text-[0.6875rem] text-white/45">
+            <label htmlFor="onboarding-name" className="mb-1.5 block text-[0.6875rem] text-white/70">
               What should I call you?
             </label>
             <input
@@ -94,7 +90,7 @@ export function Onboarding() {
             <div>
               <label
                 htmlFor="onboarding-start"
-                className="mb-1.5 block text-[0.6875rem] text-white/45"
+                className="mb-1.5 block text-[0.6875rem] text-white/70"
               >
                 Day starts
               </label>
@@ -110,7 +106,7 @@ export function Onboarding() {
               />
             </div>
             <div>
-              <label htmlFor="onboarding-end" className="mb-1.5 block text-[0.6875rem] text-white/45">
+              <label htmlFor="onboarding-end" className="mb-1.5 block text-[0.6875rem] text-white/70">
                 Day ends
               </label>
               <input
@@ -126,7 +122,7 @@ export function Onboarding() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col gap-1.5 text-[0.6875rem] text-white/45">
+          <div className="mt-4 flex flex-col gap-1.5 text-[0.6875rem] text-white/70">
             <p className="flex items-center gap-2">
               <MapPin size={12} className="text-[color:var(--admin-gold)]" />
               {timezone ? `Timezone detected: ${timezone}` : "Detecting your timezone…"}

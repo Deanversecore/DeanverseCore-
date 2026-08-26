@@ -60,7 +60,7 @@ export default function SettingsPage() {
           <Eyebrow>Profile</Eyebrow>
           <div className="mt-3 flex flex-col gap-3">
             <div>
-              <label htmlFor="profile-name" className="mb-1.5 block text-[0.6875rem] text-white/45">
+              <label htmlFor="profile-name" className="mb-1.5 block text-[0.6875rem] text-white/70">
                 What should I call you?
               </label>
               <input
@@ -72,7 +72,7 @@ export default function SettingsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="day-start" className="mb-1.5 block text-[0.6875rem] text-white/45">
+                <label htmlFor="day-start" className="mb-1.5 block text-[0.6875rem] text-white/70">
                   Day starts
                 </label>
                 <input
@@ -88,7 +88,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label htmlFor="day-end" className="mb-1.5 block text-[0.6875rem] text-white/45">
+                <label htmlFor="day-end" className="mb-1.5 block text-[0.6875rem] text-white/70">
                   Day ends
                 </label>
                 <input
@@ -159,7 +159,7 @@ export default function SettingsPage() {
               <p className="text-[0.75rem] text-white/55">
                 Signed in as <span className="text-white/85">{session.email}</span>
               </p>
-              <p className="mt-1.5 flex items-center gap-2 text-[0.6875rem] text-white/45">
+              <p className="mt-1.5 flex items-center gap-2 text-[0.6875rem] text-white/70">
                 <span
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{ background: sync.status === "error" ? "#c45c5c" : "#6f8f72" }}
@@ -318,7 +318,7 @@ function VoicePanel() {
 
       {voices.length > 0 ? (
         <div className="mt-4">
-          <label htmlFor="assistant-voice" className="mb-1.5 block text-[0.6875rem] text-white/45">
+          <label htmlFor="assistant-voice" className="mb-1.5 block text-[0.6875rem] text-white/70">
             Voice
           </label>
           <select
@@ -387,7 +387,7 @@ function Toggle({
     >
       <span className="min-w-0 flex-1">
         <span className="block text-[0.8125rem] font-medium text-white/90">{label}</span>
-        <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-white/45">{description}</span>
+        <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-white/70">{description}</span>
       </span>
       <span
         className={cx("relative h-6 w-11 shrink-0 rounded-full transition-colors duration-300")}

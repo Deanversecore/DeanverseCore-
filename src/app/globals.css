@@ -26,8 +26,8 @@
   /* Workspace palette (emerald + gold) */
   --admin-bg: #040a08;
   --admin-bg-secondary: #07100c;
-  --admin-panel: #0d1713;
-  --admin-panel-hover: #121e18;
+  --admin-panel: #163028;
+  --admin-panel-hover: #1c3a30;
   --admin-surface: color-mix(in srgb, var(--admin-panel) 94%, transparent);
   --admin-emerald: #6f8f72;
   --admin-emerald-deep: #2f5d50;
@@ -40,8 +40,8 @@
   --admin-hairline: color-mix(in srgb, var(--admin-gold) 11%, var(--admin-border-subtle));
   --admin-hairline-strong: color-mix(in srgb, var(--admin-gold) 26%, var(--admin-border));
   --admin-sheen: #ffffff0d;
-  --admin-text: #ffffff;
-  --admin-text-muted: #ffffff8c;
+  --admin-text: #f7f4ea;
+  --admin-text-muted: #d9d4c4;
   --admin-success: #6f8f72;
   --admin-danger: #c45c5c;
 
@@ -148,17 +148,17 @@ body {
 }
 
 .text-gold-gradient {
+  color: var(--admin-gold-light);
   background: linear-gradient(135deg, var(--admin-gold-light) 0%, var(--admin-gold) 55%, #aa8c46 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
 }
 
 /* -------------------------------- Surfaces ------------------------------- */
 
 .admin-panel {
-  background: linear-gradient(145deg, #ffffff0b, color-mix(in srgb, var(--admin-panel) 88%, transparent));
-  border: 1px solid var(--admin-hairline);
+  background: linear-gradient(145deg, #ffffff18, color-mix(in srgb, var(--admin-panel) 92%, #ffffff));
+  border: 1px solid var(--admin-hairline-strong);
   border-radius: var(--admin-radius);
   box-shadow: var(--admin-elev-1);
   backdrop-filter: blur(14px);
@@ -166,8 +166,8 @@ body {
 }
 
 .admin-panel-flat {
-  background: color-mix(in srgb, var(--admin-panel) 72%, transparent);
-  border: 1px solid var(--admin-border-subtle);
+  background: color-mix(in srgb, var(--admin-panel) 88%, #ffffff);
+  border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
 }
 
@@ -175,8 +175,8 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: var(--admin-radius-md);
-  border: 1px solid color-mix(in srgb, var(--admin-emerald) 14%, var(--admin-border-subtle));
-  background: linear-gradient(145deg, #ffffff0b, color-mix(in srgb, var(--admin-panel) 78%, transparent));
+  border: 1px solid color-mix(in srgb, var(--admin-emerald) 22%, var(--admin-border));
+  background: linear-gradient(145deg, #ffffff14, color-mix(in srgb, var(--admin-panel) 90%, #ffffff));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition:
@@ -298,9 +298,9 @@ select.admin-input option {
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  border: 1px solid var(--admin-border-subtle);
-  background: #ffffff08;
-  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+  background: #ffffff14;
+  color: #f0ebe0;
   white-space: nowrap;
 }
 
@@ -429,12 +429,12 @@ select.admin-input option {
   height: 7.25rem;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 32% 28%, #ffffff1f, transparent 42%),
-    linear-gradient(160deg, #1a2e27 0%, #0a1210 100%);
-  border: 1px solid color-mix(in srgb, var(--admin-gold) 42%, transparent);
+    radial-gradient(circle at 32% 28%, #ffffff33, transparent 42%),
+    linear-gradient(160deg, #2a4a40 0%, #12211c 100%);
+  border: 1px solid color-mix(in srgb, var(--admin-gold) 70%, transparent);
   box-shadow:
     0 18px 48px -20px #000000cc,
-    0 0 0 8px #c9a96214;
+    0 0 0 8px #c9a96233;
 }
 
 .voice-orb--idle {
@@ -532,11 +532,13 @@ select.admin-input option {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .gold-pulse,
+  .voice-orb--idle,
+  .voice-orb--listening,
+  .voice-orb--thinking,
+  .voice-orb--speaking,
+  .voice-orb-ring,
+  .skeleton::after {
+    animation: none !important;
   }
 }

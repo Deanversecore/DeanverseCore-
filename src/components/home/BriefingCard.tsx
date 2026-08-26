@@ -14,9 +14,8 @@ export function BriefingCard({ data, now }: { data: AppData; now: Date }) {
 
   return (
     <Panel
-      initial={{ opacity: 0, y: 12 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="p-5"
     >
       <div className="flex items-center gap-2">
@@ -25,13 +24,13 @@ export function BriefingCard({ data, now }: { data: AppData; now: Date }) {
       </div>
 
       <h2 className="admin-heading-serif mt-3 text-[1.25rem] text-white">{briefing.headline}</h2>
-      <p className="mt-2.5 text-[0.8125rem] leading-relaxed text-white/65">{briefing.body}</p>
+      <p className="mt-2.5 text-[0.8125rem] leading-relaxed text-white/80">{briefing.body}</p>
 
       <div className="mt-5 grid grid-cols-4 gap-2">
         {briefing.stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 6 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 + index * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="rounded-[var(--admin-radius-sm)] border border-white/[0.06] bg-white/[0.03] px-1 py-2.5 text-center"

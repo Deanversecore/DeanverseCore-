@@ -113,9 +113,8 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, body, action, compact = false }: EmptyStateProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={cx(
         "flex flex-col items-center px-6 text-center",
         compact ? "py-6" : "py-12",
@@ -157,7 +156,7 @@ export function ProgressBar({ value, className }: { value: number; className?: s
       <motion.div
         className="h-full rounded-full"
         style={{ background: "linear-gradient(90deg, #6f8f72, #c9a962)" }}
-        initial={{ width: 0 }}
+        initial={false}
         animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       />

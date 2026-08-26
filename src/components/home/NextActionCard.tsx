@@ -15,9 +15,8 @@ export function NextActionCard({ data, now }: { data: AppData; now: Date }) {
 
   return (
     <Panel
-      initial={{ opacity: 0, y: 12 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
       className="relative p-5"
       style={{
         borderColor: "color-mix(in srgb, var(--admin-gold) 26%, transparent)",
@@ -31,7 +30,7 @@ export function NextActionCard({ data, now }: { data: AppData; now: Date }) {
       </div>
 
       <h3 className="admin-heading-serif mt-3 text-[1.125rem] leading-snug text-white">{action.headline}</h3>
-      <p className="mt-2 text-[0.8125rem] leading-relaxed text-white/60">{action.reason}</p>
+      <p className="mt-2 text-[0.8125rem] leading-relaxed text-white/80">{action.reason}</p>
 
       <div className="mt-4 flex gap-2">
         {action.task ? (

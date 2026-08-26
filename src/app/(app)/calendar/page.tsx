@@ -73,7 +73,7 @@ export default function CalendarPage() {
               <span
                 className={cx(
                   "text-[0.5625rem] font-semibold uppercase tracking-[0.12em]",
-                  active ? "text-[color:var(--admin-gold-light)]" : "text-white/35",
+                  active ? "text-[color:var(--admin-gold-light)]" : "text-white/65",
                 )}
               >
                 {format(day, "EEE")}

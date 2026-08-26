@@ -117,12 +117,11 @@ export default function MorePage() {
       </div>
 
       <nav className="mt-6 flex flex-col gap-2 px-4" aria-label="Workspace sections">
-        {sections.map(({ href, label, description, icon: Icon, badge }, index) => (
+        {sections.map(({ href, label, description, icon: Icon, badge }) => (
           <motion.div
             key={href}
-            initial={{ opacity: 0, y: 8 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.035, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <Link
               href={href}

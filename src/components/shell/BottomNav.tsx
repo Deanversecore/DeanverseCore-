@@ -54,13 +54,13 @@ export function BottomNav() {
                   strokeWidth={active ? 2.1 : 1.7}
                   className={cx(
                     "relative z-10 transition-colors duration-300",
-                    active ? "text-[color:var(--admin-gold-light)]" : "text-white/45",
+                    active ? "text-[color:var(--admin-gold-light)]" : "text-white/70",
                   )}
                 />
                 <span
                   className={cx(
                     "relative z-10 text-[0.625rem] font-semibold tracking-wide transition-colors duration-300",
-                    active ? "text-[color:var(--admin-gold-light)]" : "text-white/45",
+                    active ? "text-[color:var(--admin-gold-light)]" : "text-white/70",
                   )}
                 >
                   {label}

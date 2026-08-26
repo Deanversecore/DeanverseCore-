@@ -87,7 +87,7 @@ export function Receipts({ receipts }: { receipts: ActionReceipt[] }) {
         return (
           <motion.div
             key={`${receipt.id}-${receipt.verb}`}
-            initial={{ opacity: 0, y: 6 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-2.5 rounded-xl px-3 py-2"
@@ -119,7 +119,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+        initial={false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="flex justify-end"
@@ -140,7 +140,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="flex gap-2.5"
@@ -197,7 +197,7 @@ function PlaybackButton({ message }: { message: ChatMessage }) {
 export function ThinkingBubble() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       className="flex gap-2.5"

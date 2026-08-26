@@ -129,7 +129,7 @@ export function RemindersSection({ data, now }: { data: AppData; now: Date }) {
             <motion.div
               key={reminder.id}
               layout
-              initial={{ opacity: 0, y: 6 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               className="admin-tool-card flex items-center gap-3 px-4 py-3"
               style={
@@ -195,7 +195,7 @@ export function FollowUpsSection({ data }: { data: AppData }) {
           <motion.div
             key={followUp.id}
             layout
-            initial={{ opacity: 0, y: 6 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="admin-tool-card flex items-center gap-3 px-4 py-3"
           >
@@ -311,13 +311,12 @@ export function QuickActions() {
     <section aria-label="Quick actions">
       <Eyebrow className="mb-2.5 px-1">Quick capture</Eyebrow>
       <div className="grid grid-cols-3 gap-2">
-        {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }, index) => (
+        {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
           <motion.button
             key={label}
             type="button"
-            initial={{ opacity: 0, y: 8 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.035, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => {
               haptic("tap");
               router.push(`/ai?draft=${encodeURIComponent(prompt)}`);

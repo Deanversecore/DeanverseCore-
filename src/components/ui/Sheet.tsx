@@ -35,7 +35,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
             type="button"
             aria-label="Close"
             className="absolute inset-0 bg-black/65 backdrop-blur-[3px]"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
@@ -51,7 +51,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
             onDragEnd={(_, info) => {
               if (info.offset.y > 110 || info.velocity.y > 700) onClose();
             }}
-            initial={{ y: "100%" }}
+            initial={false}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 34, stiffness: 340 }}

@@ -85,7 +85,7 @@ export default function GoalsPage() {
                 <motion.div
                   key={goal.id}
                   layout
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: -12 }}
                   transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}

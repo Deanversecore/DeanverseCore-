@@ -124,7 +124,7 @@ export default function SearchPage() {
                 {group.items.slice(0, 6).map((item, index) => (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.03, duration: 0.3 }}
                     className="admin-tool-card flex items-start gap-3 px-4 py-3"
