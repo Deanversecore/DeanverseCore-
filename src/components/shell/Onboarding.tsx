@@ -56,7 +56,7 @@ export function Onboarding() {
           </div>
         </div>
 
-        <h1 className="admin-heading-serif mt-7 text-[1.625rem] leading-tight text-white">
+        <h1 className="admin-heading-serif mt-4 text-[1.375rem] leading-tight text-white">
           {greetingFor(now)}. Let&apos;s set up your{" "}
           <span className="text-gold-gradient">command center</span>.
         </h1>
@@ -64,7 +64,7 @@ export function Onboarding() {
           I talk. You talk. Say Core when you want me — I turn what you say into tasks, reminders, and memory.
         </p>
 
-        <Panel className="mt-7 p-5">
+        <Panel className="mt-4 p-4">
           <Eyebrow>Your profile</Eyebrow>
 
           <div className="mt-3.5">

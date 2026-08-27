@@ -168,7 +168,7 @@ export function Composer({
 
   if (talkFirst && showVoice) {
     return (
-      <div className="flex flex-col items-center px-3 pb-3 pt-1">
+      <div className="flex flex-col items-center px-3 pb-2 pt-1">
         <motion.button
           type="button"
           whileTap={{ scale: 0.94 }}
@@ -193,7 +193,7 @@ export function Composer({
         >
           {listening ? <Square size={18} fill="currentColor" /> : <Mic size={26} />}
         </motion.button>
-        <p className="mt-2.5 text-[0.6875rem] text-white/40">
+        <p className="mt-1.5 text-[0.6875rem] text-white/40">
           {listening ? "Listening for Core…" : "Say Core, then talk"}
         </p>
       </div>

@@ -83,7 +83,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
                 <X size={16} />
               </button>
             </div>
-            <div className="max-h-[70dvh] overflow-y-auto px-5 pb-2">{children}</div>
+            <div className="max-h-[min(70dvh,28rem)] overflow-y-auto px-5 pb-2">{children}</div>
           </motion.div>
         </div>
       ) : null}

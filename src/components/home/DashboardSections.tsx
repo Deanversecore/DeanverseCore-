@@ -309,20 +309,20 @@ export function QuickActions() {
 
   return (
     <section aria-label="Quick actions">
-      <Eyebrow className="mb-2.5 px-1">Quick capture</Eyebrow>
+      <Eyebrow className="mb-1.5 px-1">Quick capture</Eyebrow>
       <button
         type="button"
         onClick={() => {
           haptic("tap");
           router.push("/ai?listen=1");
         }}
-        className="admin-btn-ghost mb-2.5 w-full"
+        className="admin-btn-gold mb-2 w-full"
       >
         <Mic size={15} />
         Speak to Core
       </button>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1.5">
         {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
           <motion.button
             key={label}
@@ -333,10 +333,10 @@ export function QuickActions() {
               haptic("tap");
               router.push(`/ai?draft=${encodeURIComponent(prompt)}`);
             }}
-            className="admin-tool-card flex flex-col items-center gap-2 px-2 py-3.5"
+            className="admin-tool-card flex flex-col items-center gap-1.5 px-1.5 py-2.5"
           >
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-[color:var(--admin-gold)]"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-[color:var(--admin-gold)]"
               style={{
                 background: "var(--admin-gold-soft)",
                 border: "1px solid color-mix(in srgb, var(--admin-gold) 22%, transparent)",

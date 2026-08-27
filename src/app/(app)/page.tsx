@@ -28,10 +28,10 @@ export default function HomePage() {
     <div className="pb-4">
       <HomeHeader name={data.profile.name} now={now} />
 
-      <div className="mt-4 flex flex-col gap-5 px-4">
-        <BriefingCard data={data} now={now} />
-        <NextActionCard data={data} now={now} />
+      <div className="mt-3 flex flex-col gap-4 px-4">
         <QuickActions />
+        <NextActionCard data={data} now={now} />
+        <BriefingCard data={data} now={now} />
         <InsightStack data={data} now={now} />
         <PrioritiesSection data={data} now={now} />
         <ScheduleSection data={data} now={now} />

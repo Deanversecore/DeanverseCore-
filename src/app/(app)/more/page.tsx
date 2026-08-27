@@ -92,7 +92,7 @@ export default function MorePage() {
       </header>
 
       <div className="mt-5 px-4">
-        <Panel className="p-5">
+        <Panel className="p-4">
           <LogoWordmark />
           <div className="mt-4 grid grid-cols-3 gap-2">
             {[
@@ -126,7 +126,7 @@ export default function MorePage() {
             <Link
               href={href}
               onClick={() => haptic("select")}
-              className="admin-tool-card flex items-center gap-3.5 px-4 py-3.5"
+              className="admin-tool-card flex items-center gap-3.5 px-4 py-2.5"
             >
               <span
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[color:var(--admin-gold)]"

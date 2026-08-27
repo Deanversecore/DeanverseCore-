@@ -57,7 +57,7 @@
   --admin-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   --app-topbar-height: calc(4rem + env(safe-area-inset-top, 0px));
-  --app-bottomnav-height: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+  --app-bottomnav-height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 @theme inline {
@@ -216,8 +216,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1.125rem;
-  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #0a0a0a;
@@ -243,8 +243,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1.125rem;
-  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--admin-text-muted);
@@ -340,7 +340,7 @@ select.admin-input option {
     0 -24px 64px -12px #0000008c;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  padding-bottom: max(0.2rem, env(safe-area-inset-bottom));
 }
 
 .app-topbar {

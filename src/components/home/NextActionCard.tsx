@@ -17,7 +17,7 @@ export function NextActionCard({ data, now }: { data: AppData; now: Date }) {
     <Panel
       initial={false}
       animate={{ opacity: 1, y: 0 }}
-      className="relative p-5"
+      className="relative p-4"
       style={{
         borderColor: "color-mix(in srgb, var(--admin-gold) 26%, transparent)",
         background:
@@ -29,10 +29,10 @@ export function NextActionCard({ data, now }: { data: AppData; now: Date }) {
         <Eyebrow>What should I do next?</Eyebrow>
       </div>
 
-      <h3 className="admin-heading-serif mt-3 text-[1.125rem] leading-snug text-white">{action.headline}</h3>
-      <p className="mt-2 text-[0.8125rem] leading-relaxed text-white/80">{action.reason}</p>
+      <h3 className="admin-heading-serif mt-2 text-[1.0625rem] leading-snug text-white">{action.headline}</h3>
+      <p className="mt-1.5 line-clamp-2 text-[0.8125rem] leading-relaxed text-white/80">{action.reason}</p>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-3 flex gap-2">
         {action.task ? (
           <button
             type="button"
