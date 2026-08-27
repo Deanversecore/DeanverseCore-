@@ -38,6 +38,13 @@ export default function MorePage() {
       badge: null,
     },
     {
+      href: "/more/settings",
+      label: "Settings",
+      description: "Profile, privacy, and sync",
+      icon: Settings2,
+      badge: null,
+    },
+    {
       href: "/more/notes",
       label: "Notes",
       description: "Thinking, drafts, and captures",
@@ -72,13 +79,6 @@ export default function MorePage() {
       icon: UserRound,
       badge: openFollowUps(data).length,
     },
-    {
-      href: "/more/settings",
-      label: "Settings",
-      description: "Profile, privacy, and sync",
-      icon: Settings2,
-      badge: null,
-    },
   ];
 
   const doneToday = completedToday(data, now).length;
@@ -86,15 +86,15 @@ export default function MorePage() {
 
   return (
     <div className="pb-4">
-      <header className="px-5 pt-4">
+      <header className="px-4 pt-3">
         <Eyebrow>Workspace</Eyebrow>
-        <h1 className="admin-heading-serif mt-1.5 text-[1.75rem] text-white">More</h1>
+        <h1 className="admin-heading-serif mt-1 text-[1.375rem] text-white">More</h1>
       </header>
 
-      <div className="mt-5 px-4">
-        <Panel className="p-4">
+      <div className="mt-3 px-4">
+        <Panel className="p-3">
           <LogoWordmark />
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
             {[
               { label: "Open", value: openCount },
               { label: "Done today", value: doneToday },
@@ -102,9 +102,9 @@ export default function MorePage() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-[var(--admin-radius-sm)] border border-white/[0.06] bg-white/[0.03] px-2 py-2.5 text-center"
+                className="rounded-[var(--admin-radius-sm)] border border-white/[0.06] bg-white/[0.03] px-2 py-1.5 text-center"
               >
-                <p className="admin-stat-value text-[1.25rem] text-[color:var(--admin-gold-light)]">
+                <p className="admin-stat-value text-[1.0625rem] text-[color:var(--admin-gold-light)]">
                   {stat.value}
                 </p>
                 <p className="mt-1 text-[0.5625rem] font-semibold uppercase tracking-[0.14em] text-white/40">
@@ -116,7 +116,7 @@ export default function MorePage() {
         </Panel>
       </div>
 
-      <nav className="mt-6 flex flex-col gap-2 px-4" aria-label="Workspace sections">
+      <nav className="mt-3 flex flex-col gap-1.5 px-4" aria-label="Workspace sections">
         {sections.map(({ href, label, description, icon: Icon, badge }) => (
           <motion.div
             key={href}
@@ -126,10 +126,10 @@ export default function MorePage() {
             <Link
               href={href}
               onClick={() => haptic("select")}
-              className="admin-tool-card flex items-center gap-3.5 px-4 py-2.5"
+              className="admin-tool-card flex items-center gap-3 px-3 py-2"
             >
               <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[color:var(--admin-gold)]"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[color:var(--admin-gold)]"
                 style={{
                   background: "var(--admin-gold-soft)",
                   border: "1px solid color-mix(in srgb, var(--admin-gold) 20%, transparent)",
@@ -150,7 +150,7 @@ export default function MorePage() {
         ))}
       </nav>
 
-      <p className="mt-8 px-6 text-center text-[0.6875rem] leading-relaxed text-white/25">
+      <p className="mt-4 px-6 text-center text-[0.6875rem] leading-relaxed text-white/25">
         {syncStatus === "synced" || syncStatus === "syncing"
           ? "Your workspace is syncing to your account."
           : "Your workspace lives on this device. Sign in from settings to carry it across devices."}
