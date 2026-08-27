@@ -45,7 +45,7 @@ export function Composer({
   const stopRef = useRef<(() => void) | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const originRef = useRef<VoiceOrigin>("tap");
-  const startingRef = useRef(false);
+  const startGen = useRef(0);
 
   const handsFreeRef = useRef(handsFree);
   const submitRef = useRef(onSubmit);
@@ -77,20 +77,20 @@ export function Composer({
   const beginListening = useCallback(
     (origin: VoiceOrigin = "tap") => {
       if (stopRef.current) {
+        startGen.current += 1;
         stopRef.current();
         return;
       }
-      if (startingRef.current) return;
       originRef.current = origin;
       haptic("select");
       unlockAudioPlayback();
       stopSpeaking();
-      startingRef.current = true;
+      const gen = ++startGen.current;
 
       void (async () => {
         const allowed = await unlockMicrophone();
+        if (gen !== startGen.current) return;
         if (!allowed) {
-          startingRef.current = false;
           onVoiceErrorRef.current?.("not-allowed");
           return;
         }
@@ -106,14 +106,16 @@ export function Composer({
             else onChange(text);
           },
           onEnd: () => {
-            startingRef.current = false;
             setListeningState(false);
             stopRef.current = null;
           },
           onError: (reason) => onVoiceErrorRef.current?.(reason),
         });
 
-        startingRef.current = false;
+        if (gen !== startGen.current) {
+          stop?.();
+          return;
+        }
         if (stop) {
           stopRef.current = stop;
           setListeningState(true);
@@ -139,11 +141,24 @@ export function Composer({
     return () => window.clearTimeout(id);
   }, [listenSignal, voiceReady, voiceEnabled, beginListening]);
 
-  useEffect(() => () => stopRef.current?.(), []);
+  useEffect(() => {
+    if (talkFirst) return;
+    startGen.current += 1;
+    stopRef.current?.();
+  }, [talkFirst]);
+
+  useEffect(
+    () => () => {
+      startGen.current += 1;
+      stopRef.current?.();
+    },
+    [],
+  );
 
   const submit = () => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
+    startGen.current += 1;
     stopRef.current?.();
     haptic("tap");
     onSubmit(trimmed, { source: "typed" });

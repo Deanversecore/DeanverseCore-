@@ -163,6 +163,7 @@ export function AssistantScreen() {
 
         const { profile } = useStore.getState();
         const listenAgain = () => {
+          if (source !== "voice") return;
           if (profile.handsFreeEnabled && profile.voiceEnabled) {
             setListenSignal((value) => value + 1);
           }
@@ -216,7 +217,7 @@ export function AssistantScreen() {
     ? draft || "Go ahead — say Core."
     : thinking
       ? ""
-      : wakeHint || lastAssistant?.content || `I'm ${ASSISTANT_NAME}. Say Core when you need me.`;
+      : lastAssistant?.content || wakeHint || `I'm ${ASSISTANT_NAME}. Say Core when you need me.`;
 
   if (!mounted || !hydrated) {
     return (
@@ -322,6 +323,10 @@ export function AssistantScreen() {
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 py-4">
         <VoicePresence state={presence} />
+
+        {wakeHint && lastAssistant && !listening && !thinking ? (
+          <p className="mt-2 max-w-[22rem] text-center text-[0.75rem] text-white/70">{wakeHint}</p>
+        ) : null}
 
         {lastUser && !listening && !wakeHint ? (
           <p className="mt-4 max-w-[22rem] truncate text-center text-[0.75rem] text-white/70">
