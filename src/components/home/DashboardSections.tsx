@@ -310,6 +310,18 @@ export function QuickActions() {
   return (
     <section aria-label="Quick actions">
       <Eyebrow className="mb-2.5 px-1">Quick capture</Eyebrow>
+      <button
+        type="button"
+        onClick={() => {
+          haptic("tap");
+          router.push("/ai?listen=1");
+        }}
+        className="admin-btn-ghost mb-2.5 w-full"
+      >
+        <Mic size={15} />
+        Speak to Core
+      </button>
+
       <div className="grid grid-cols-3 gap-2">
         {QUICK_ACTIONS.map(({ label, icon: Icon, prompt }) => (
           <motion.button
@@ -336,18 +348,6 @@ export function QuickActions() {
           </motion.button>
         ))}
       </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          haptic("tap");
-          router.push("/ai?listen=1");
-        }}
-        className="admin-btn-ghost mt-2.5 w-full"
-      >
-        <Mic size={15} />
-        Speak to Core
-      </button>
     </section>
   );
 }
