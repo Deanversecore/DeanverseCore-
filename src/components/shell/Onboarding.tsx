@@ -46,7 +46,7 @@ export function Onboarding() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center px-5 py-10" style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}>
+    <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-5 py-8" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3">
           <LogoMark size={44} />

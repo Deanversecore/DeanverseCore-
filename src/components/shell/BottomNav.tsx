@@ -21,7 +21,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="app-bottomnav fixed inset-x-0 bottom-0 z-40"
+      className="app-bottomnav relative z-40 shrink-0"
       aria-label="Primary"
     >
       <ul className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-1.5">

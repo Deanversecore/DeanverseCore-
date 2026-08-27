@@ -42,7 +42,7 @@ export default function CalendarPage() {
 
   return (
     <div className="pb-6">
-      <header className="px-5 pt-6">
+      <header className="px-5 pt-4">
         <Eyebrow>Schedule</Eyebrow>
         <h1 className="admin-heading-serif mt-1.5 text-[1.75rem] text-white">{format(selected, "MMMM yyyy")}</h1>
       </header>

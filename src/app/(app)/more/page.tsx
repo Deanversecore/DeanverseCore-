@@ -85,8 +85,8 @@ export default function MorePage() {
   const openCount = data.tasks.filter((task) => !task.done).length;
 
   return (
-    <div className="pb-6">
-      <header className="px-5 pt-6">
+    <div className="pb-4">
+      <header className="px-5 pt-4">
         <Eyebrow>Workspace</Eyebrow>
         <h1 className="admin-heading-serif mt-1.5 text-[1.75rem] text-white">More</h1>
       </header>

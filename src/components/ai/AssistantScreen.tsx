@@ -230,18 +230,18 @@ export function AssistantScreen() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="app-topbar app-topbar-inset sticky top-0 z-20 flex items-center gap-3 px-3 py-3">
+      <header className="app-topbar app-topbar-inset sticky top-0 z-20 flex shrink-0 items-center gap-2 px-2.5 py-2">
         <button
           type="button"
           onClick={() => router.push("/")}
           aria-label="Back to dashboard"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 active:bg-white/10"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 active:bg-white/10"
         >
           <ChevronLeft size={17} />
         </button>
 
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <LogoMark size={30} />
+          <LogoMark size={26} />
           <div className="min-w-0 leading-none">
             <p className="admin-heading-serif truncate text-[0.9375rem] text-white">{ASSISTANT_NAME}</p>
             <p className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-white/40">
@@ -267,7 +267,7 @@ export function AssistantScreen() {
           }}
           aria-label={keyboardOpen ? "Hide keyboard" : "Type instead"}
           aria-pressed={keyboardOpen}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/45 active:bg-white/10"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/45 active:bg-white/10"
           style={
             keyboardOpen
               ? {
@@ -292,7 +292,7 @@ export function AssistantScreen() {
             }}
             aria-label={spokenRepliesEnabled ? "Mute spoken replies" : "Let me speak"}
             aria-pressed={spokenRepliesEnabled}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors"
             style={{
               borderColor: spokenRepliesEnabled
                 ? "color-mix(in srgb, var(--admin-gold) 46%, transparent)"
@@ -315,13 +315,13 @@ export function AssistantScreen() {
             clearMessages();
           }}
           aria-label="Start a new conversation"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/45 active:bg-white/10"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/45 active:bg-white/10"
         >
           <RotateCcw size={15} />
         </button>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 py-4">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-2">
         <VoicePresence state={presence} />
 
         {wakeHint && lastAssistant && !listening && !thinking ? (
@@ -329,12 +329,12 @@ export function AssistantScreen() {
         ) : null}
 
         {lastUser && !listening && !wakeHint ? (
-          <p className="mt-4 max-w-[22rem] truncate text-center text-[0.75rem] text-white/70">
+            <p className="mt-2 max-w-[22rem] truncate text-center text-[0.75rem] text-white/70">
             You said “{lastUser.content}”
           </p>
         ) : null}
 
-        <div className="mt-3 min-h-[4.5rem] w-full max-w-[22rem]" aria-live="polite">
+        <div className="mt-2 min-h-[3.25rem] w-full max-w-[22rem]" aria-live="polite">
           <AnimatePresence mode="wait">
             {caption ? (
               <motion.p
@@ -343,7 +343,7 @@ export function AssistantScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                className="scrollbar-none max-h-[22vh] overflow-y-auto text-center text-[1.0625rem] leading-relaxed text-white/90"
+                className="scrollbar-none max-h-[16vh] overflow-y-auto text-center text-[1rem] leading-relaxed text-white/90"
               >
                 {caption}
               </motion.p>
@@ -369,7 +369,7 @@ export function AssistantScreen() {
       </div>
 
       <div
-        className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-2"
+        className="scrollbar-none flex shrink-0 gap-2 overflow-x-auto px-4 pb-1"
         style={{ background: "linear-gradient(180deg, transparent, #0a1210 70%)" }}
       >
         <AnimatePresence initial={false}>
@@ -391,7 +391,7 @@ export function AssistantScreen() {
         </AnimatePresence>
       </div>
 
-      <div style={{ paddingBottom: "var(--app-bottomnav-height)" }}>
+      <div className="shrink-0">
         <Composer
           value={draft}
           onChange={setDraft}

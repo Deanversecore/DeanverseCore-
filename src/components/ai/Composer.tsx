@@ -177,7 +177,7 @@ export function Composer({
           aria-label={listening ? "Stop listening" : "Talk to Core"}
           aria-pressed={listening}
           className={cx(
-            "flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border transition-colors",
+            "flex h-16 w-16 items-center justify-center rounded-full border transition-colors",
             listening && "gold-pulse",
           )}
           style={{
@@ -236,7 +236,7 @@ export function Composer({
           }}
           placeholder={listening ? "Listening for Core…" : "Or type if you'd rather"}
           aria-label="Message Core"
-          className="max-h-[8.25rem] min-h-[2.5rem] flex-1 resize-none bg-transparent px-2.5 py-2 text-[0.875rem] leading-relaxed text-white placeholder:text-white/35 focus:outline-none"
+          className="max-h-[8.25rem] min-h-[2.75rem] flex-1 resize-none bg-transparent px-2.5 py-2 text-[1rem] leading-relaxed text-white placeholder:text-white/35 focus:outline-none"
         />
 
         {showVoice ? (
