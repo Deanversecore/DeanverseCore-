@@ -34,6 +34,8 @@ export const viewport: Viewport = {
   themeColor: "#0f1a17",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
 };
@@ -43,7 +45,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${gelasio.variable}`}>
-      <body className="min-h-dvh antialiased">
+      <body className="h-dvh overflow-hidden antialiased">
         <div className="app-ambient" aria-hidden />
         {children}
       </body>

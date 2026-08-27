@@ -36,7 +36,7 @@ export default function TasksPage() {
 
   return (
     <div className="pb-6">
-      <header className="px-5 pt-6">
+      <header className="px-5 pt-4">
         <Eyebrow>Execution</Eyebrow>
         <div className="mt-1.5 flex items-end justify-between gap-3">
           <h1 className="admin-heading-serif text-[1.75rem] text-white">Tasks</h1>

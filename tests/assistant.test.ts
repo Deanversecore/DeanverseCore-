@@ -5,6 +5,7 @@ import { respond } from "../src/lib/ai/engine";
 import { testWorkspace } from "./fixture";
 import { emptyData } from "../src/lib/seed";
 import { toSpokenText } from "../src/lib/voice";
+import { hasWakeWord, resolveVoiceTurn, stripWakeWord } from "../src/lib/ai/wake";
 import type { AppData } from "../src/lib/types";
 
 /* A fixed Wednesday so weekday and "tomorrow" maths are deterministic. */
@@ -125,6 +126,27 @@ test("unrecognised input still offers a useful next step", () => {
   const result = respond("asdfgh qwerty", data, NOW);
   assert.equal(result.effects.length, 0);
   assert.ok(result.suggestions.length > 0);
+  assert.match(result.text, /I heard you/);
+});
+
+test("a hearing check is acknowledged instead of treated as unknown", () => {
+  assert.equal(interpret("Can you hear me", NOW).type, "hearing_check");
+  assert.equal(interpret("are you there?", NOW).type, "hearing_check");
+  const result = respond("Core, can you hear me", workspace(), NOW);
+  assert.match(result.text, /I hear you/);
+  assert.match(result.text, /Core/);
+});
+
+test("Core is the wake word and is stripped before planning", () => {
+  assert.equal(hasWakeWord("Core, plan my day"), true);
+  assert.equal(stripWakeWord("Hey Core, plan my day"), "plan my day");
+  assert.equal(resolveVoiceTurn("can you hear me").kind, "ignore");
+  assert.equal(resolveVoiceTurn("Core").kind, "wake");
+  assert.equal(resolveVoiceTurn("kor, what am I forgetting?").kind, "command");
+
+  const data = workspace();
+  assert.match(respond("Core", data, NOW).text, /I'm Core/);
+  assert.match(respond("Core, plan my day", data, NOW).text, /Fixed points/);
 });
 
 test("an empty workspace answers honestly instead of inventing work", () => {

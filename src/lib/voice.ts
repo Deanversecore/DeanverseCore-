@@ -14,10 +14,12 @@ interface SpeechRecognitionLike {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives: number;
   start: () => void;
   stop: () => void;
+  abort: () => void;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
 }
 
@@ -40,45 +42,129 @@ interface VoiceHandlers {
   onPartial: (transcript: string) => void;
   onFinal: (transcript: string) => void;
   onEnd: () => void;
+  onError?: (reason: string) => void;
+}
+
+const SILENCE_MS = 1400;
+
+/** Ask for the mic up front so speech recognition is allowed to start. */
+export async function unlockMicrophone(): Promise<boolean> {
+  if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) return true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    for (const track of stream.getTracks()) track.stop();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Starts dictation and returns a stop function, or null when unsupported. */
 export function startDictation(handlers: VoiceHandlers): (() => void) | null {
   const Recognition = getConstructor();
-  if (!Recognition) return null;
-
-  const recognition = new Recognition();
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = true;
-
-  let finalTranscript = "";
-
-  recognition.onresult = (event) => {
-    let interim = "";
-    for (let i = event.resultIndex; i < event.results.length; i += 1) {
-      const result = event.results[i];
-      if (result.isFinal) finalTranscript += result[0].transcript;
-      else interim += result[0].transcript;
-    }
-    handlers.onPartial(`${finalTranscript}${interim}`.trim());
-  };
-
-  recognition.onerror = () => handlers.onEnd();
-
-  recognition.onend = () => {
-    const transcript = finalTranscript.trim();
-    if (transcript) handlers.onFinal(transcript);
-    handlers.onEnd();
-  };
-
-  try {
-    recognition.start();
-  } catch {
+  if (!Recognition) {
+    handlers.onError?.("unsupported");
     return null;
   }
 
-  return () => recognition.stop();
+  const recognition = new Recognition();
+  recognition.lang = "en-US";
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  let stopped = false;
+  let committed = false;
+  let finalTranscript = "";
+  let interimTranscript = "";
+  let silenceTimer: number | undefined;
+  let restartTimer: number | undefined;
+
+  let emptyRestarts = 0;
+  let startedAt = 0;
+
+  const snapshot = () => `${finalTranscript} ${interimTranscript}`.replace(/\s+/g, " ").trim();
+
+  const finish = (transcript?: string) => {
+    if (stopped) return;
+    stopped = true;
+    window.clearTimeout(silenceTimer);
+    window.clearTimeout(restartTimer);
+    try {
+      recognition.stop();
+    } catch {
+      /* already stopping */
+    }
+    const text = (transcript ?? snapshot()).trim();
+    if (text && !committed) {
+      committed = true;
+      handlers.onFinal(text);
+    }
+    handlers.onEnd();
+  };
+
+  const bumpSilence = () => {
+    window.clearTimeout(silenceTimer);
+    silenceTimer = window.setTimeout(() => {
+      if (snapshot()) finish();
+    }, SILENCE_MS);
+  };
+
+  recognition.onresult = (event) => {
+    if (stopped) return;
+    interimTranscript = "";
+    for (let i = event.resultIndex; i < event.results.length; i += 1) {
+      const result = event.results[i];
+      if (result.isFinal) finalTranscript += ` ${result[0].transcript}`;
+      else interimTranscript += result[0].transcript;
+    }
+    handlers.onPartial(snapshot());
+    bumpSilence();
+  };
+
+  recognition.onerror = (event) => {
+    const error = event?.error ?? "";
+    if (stopped) return;
+    if (error === "no-speech" || error === "aborted") return;
+    if (error === "not-allowed" || error === "service-not-allowed") {
+      handlers.onError?.(error);
+      finish("");
+    }
+  };
+
+  const pump = () => {
+    if (stopped) return;
+    startedAt = Date.now();
+    try {
+      recognition.start();
+    } catch {
+      restartTimer = window.setTimeout(pump, 180);
+    }
+  };
+
+  recognition.onend = () => {
+    if (stopped) return;
+    if (snapshot()) {
+      finish();
+      return;
+    }
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < 400) {
+      emptyRestarts += 1;
+      if (emptyRestarts > 12) {
+        handlers.onError?.("failed");
+        finish("");
+        return;
+      }
+    } else {
+      emptyRestarts = 0;
+    }
+    restartTimer = window.setTimeout(pump, 80);
+  };
+
+  pump();
+
+  return () => finish();
 }
 
 /* ------------------------------------------------------------------ speech out */

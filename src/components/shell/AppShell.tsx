@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (!hydrated) {
     return (
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-lg items-center justify-center">
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-lg items-center justify-center overflow-hidden">
         <LogoMark size={52} />
       </div>
     );
@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!onboardedAt) {
     return (
       <MotionConfig reducedMotion="user">
-        <div className="relative z-10 mx-auto w-full max-w-lg">
+        <div className="relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
           <Onboarding />
         </div>
       </MotionConfig>
@@ -56,12 +56,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col">
+      <div className="relative z-10 mx-auto flex h-dvh max-h-dvh w-full max-w-lg flex-col overflow-hidden">
         <main
           className={
             immersive
-              ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-              : "flex-1 overflow-y-auto pb-[calc(var(--app-bottomnav-height)+0.75rem)]"
+              ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+              : "min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
           }
           style={immersive ? undefined : { paddingTop: "env(safe-area-inset-top, 0px)" }}
         >

@@ -3,17 +3,20 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowUp, Mic, Square } from "lucide-react";
-import { isVoiceSupported, startDictation, unlockAudioPlayback } from "@/lib/voice";
+import { isVoiceSupported, startDictation, stopSpeaking, unlockAudioPlayback, unlockMicrophone } from "@/lib/voice";
 import { haptic } from "@/lib/haptics";
 import { cx } from "@/components/ui/Primitives";
 
 const noopSubscribe = () => () => {};
 const returnFalse = () => false;
 
+export type UtteranceSource = "voice" | "typed";
+export type VoiceOrigin = "tap" | "handsfree";
+
 interface ComposerProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (value: string) => void;
+  onSubmit: (value: string, meta?: { source: UtteranceSource; origin?: VoiceOrigin }) => boolean | void;
   disabled?: boolean;
   autoListen?: boolean;
   voiceEnabled: boolean;
@@ -22,6 +25,7 @@ interface ComposerProps {
   /** Hide the text field and lead with a talk button. */
   talkFirst?: boolean;
   onListeningChange?: (listening: boolean) => void;
+  onVoiceError?: (reason: string) => void;
 }
 
 export function Composer({
@@ -35,19 +39,24 @@ export function Composer({
   listenSignal = 0,
   talkFirst = false,
   onListeningChange,
+  onVoiceError,
 }: ComposerProps) {
   const [listening, setListening] = useState(false);
   const stopRef = useRef<(() => void) | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const originRef = useRef<VoiceOrigin>("tap");
+  const startGen = useRef(0);
 
   const handsFreeRef = useRef(handsFree);
   const submitRef = useRef(onSubmit);
   const onListeningChangeRef = useRef(onListeningChange);
+  const onVoiceErrorRef = useRef(onVoiceError);
   const talkFirstRef = useRef(talkFirst);
   useEffect(() => {
     handsFreeRef.current = handsFree;
     submitRef.current = onSubmit;
     onListeningChangeRef.current = onListeningChange;
+    onVoiceErrorRef.current = onVoiceError;
     talkFirstRef.current = talkFirst;
   });
 
@@ -65,73 +74,110 @@ export function Composer({
     el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
   }, [value, talkFirst]);
 
-  const beginListening = useCallback(() => {
-    if (stopRef.current) {
-      stopRef.current();
-      return;
-    }
-    haptic("select");
-    unlockAudioPlayback();
-    const stop = startDictation({
-      onPartial: onChange,
-      onFinal: (transcript) => {
-        haptic("success");
-        if (handsFreeRef.current || talkFirstRef.current) {
-          onChange("");
-          submitRef.current(transcript);
-        } else {
-          onChange(transcript);
+  const beginListening = useCallback(
+    (origin: VoiceOrigin = "tap") => {
+      if (stopRef.current) {
+        startGen.current += 1;
+        stopRef.current();
+        return;
+      }
+      originRef.current = origin;
+      haptic("select");
+      unlockAudioPlayback();
+      stopSpeaking();
+      const gen = ++startGen.current;
+
+      void (async () => {
+        const allowed = await unlockMicrophone();
+        if (gen !== startGen.current) return;
+        if (!allowed) {
+          onVoiceErrorRef.current?.("not-allowed");
+          return;
         }
-      },
-      onEnd: () => {
-        setListeningState(false);
-        stopRef.current = null;
-      },
-    });
-    if (stop) {
-      stopRef.current = stop;
-      setListeningState(true);
-    }
-  }, [onChange, setListeningState]);
+
+        const stop = startDictation({
+          onPartial: onChange,
+          onFinal: (transcript) => {
+            const text = transcript.trim();
+            if (!text) return;
+            haptic("success");
+            submitRef.current(text, { source: "voice", origin: originRef.current });
+            if (handsFreeRef.current || talkFirstRef.current) onChange("");
+            else onChange(text);
+          },
+          onEnd: () => {
+            setListeningState(false);
+            stopRef.current = null;
+          },
+          onError: (reason) => onVoiceErrorRef.current?.(reason),
+        });
+
+        if (gen !== startGen.current) {
+          stop?.();
+          return;
+        }
+        if (stop) {
+          stopRef.current = stop;
+          setListeningState(true);
+        } else {
+          onVoiceErrorRef.current?.("unsupported");
+        }
+      })();
+    },
+    [onChange, setListeningState],
+  );
 
   const autoListenStarted = useRef(false);
   useEffect(() => {
     if (!autoListen || !voiceReady || !voiceEnabled || autoListenStarted.current) return;
     autoListenStarted.current = true;
-    const id = window.setTimeout(() => beginListening(), 0);
+    const id = window.setTimeout(() => beginListening("handsfree"), 0);
     return () => window.clearTimeout(id);
   }, [autoListen, voiceReady, voiceEnabled, beginListening]);
 
   useEffect(() => {
     if (listenSignal === 0 || !voiceReady || !voiceEnabled || stopRef.current) return;
-    const id = window.setTimeout(() => beginListening(), 260);
+    const id = window.setTimeout(() => beginListening("handsfree"), 700);
     return () => window.clearTimeout(id);
   }, [listenSignal, voiceReady, voiceEnabled, beginListening]);
 
-  useEffect(() => () => stopRef.current?.(), []);
+  useEffect(() => {
+    if (talkFirst) return;
+    startGen.current += 1;
+    stopRef.current?.();
+  }, [talkFirst]);
+
+  useEffect(
+    () => () => {
+      startGen.current += 1;
+      stopRef.current?.();
+    },
+    [],
+  );
 
   const submit = () => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
+    startGen.current += 1;
     stopRef.current?.();
     haptic("tap");
-    onSubmit(trimmed);
+    onSubmit(trimmed, { source: "typed" });
   };
 
   const showVoice = voiceEnabled && voiceReady;
 
   if (talkFirst && showVoice) {
     return (
-      <div className="flex flex-col items-center px-3 pb-3 pt-1">
+      <div className="flex flex-col items-center px-3 pb-2 pt-1">
         <motion.button
           type="button"
           whileTap={{ scale: 0.94 }}
-          onClick={beginListening}
+          onClick={() => beginListening("tap")}
           disabled={disabled}
-          aria-label={listening ? "Stop listening" : "Talk to me"}
+          aria-label={listening ? "Stop listening" : "Talk to Core"}
           aria-pressed={listening}
           className={cx(
-            "flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border transition-colors",
+            "flex h-16 w-16 items-center justify-center rounded-full border transition-colors",
             listening && "gold-pulse",
           )}
           style={{
@@ -147,8 +193,8 @@ export function Composer({
         >
           {listening ? <Square size={18} fill="currentColor" /> : <Mic size={26} />}
         </motion.button>
-        <p className="mt-2.5 text-[0.6875rem] text-white/40">
-          {listening ? "Tap to stop" : "Tap to talk"}
+        <p className="mt-1.5 text-[0.6875rem] text-white/40">
+          {listening ? "Listening for Core…" : "Say Core, then talk"}
         </p>
       </div>
     );
@@ -188,16 +234,16 @@ export function Composer({
               submit();
             }
           }}
-          placeholder={listening ? "Listening…" : "Or type if you'd rather"}
-          aria-label="Message your assistant"
-          className="max-h-[8.25rem] min-h-[2.5rem] flex-1 resize-none bg-transparent px-2.5 py-2 text-[0.875rem] leading-relaxed text-white placeholder:text-white/35 focus:outline-none"
+          placeholder={listening ? "Listening for Core…" : "Or type if you'd rather"}
+          aria-label="Message Core"
+          className="max-h-[8.25rem] min-h-[2.75rem] flex-1 resize-none bg-transparent px-2.5 py-2 text-[1rem] leading-relaxed text-white placeholder:text-white/35 focus:outline-none"
         />
 
         {showVoice ? (
           <motion.button
             type="button"
             whileTap={{ scale: 0.92 }}
-            onClick={beginListening}
+            onClick={() => beginListening("tap")}
             aria-label={listening ? "Stop listening" : "Talk to me"}
             aria-pressed={listening}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors"

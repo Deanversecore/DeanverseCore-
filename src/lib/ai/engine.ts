@@ -27,6 +27,7 @@ import {
 } from "@/lib/selectors";
 import { buildDayPlan, buildWeekPlan, nextBestAction, pluralize } from "@/lib/ai/briefing";
 import { interpret, type Intent } from "@/lib/ai/nlu";
+import { ASSISTANT_NAME, hasWakeWord, stripWakeWord } from "@/lib/ai/wake";
 
 export type Effect =
   | { op: "addTask"; payload: Task }
@@ -64,13 +65,25 @@ function result(partial: Partial<AssistantResult> & { text: string }): Assistant
 
 export function runIntent(intent: Intent, data: AppData, now: Date): AssistantResult {
   switch (intent.type) {
+    case "wake":
+      return result({
+        text: `I'm ${ASSISTANT_NAME}. I'm here — go ahead.`,
+        suggestions: ["Plan my day", "What am I forgetting?", "Who's waiting on me?"],
+      });
+
+    case "hearing_check":
+      return result({
+        text: `Yes. I hear you. I'm ${ASSISTANT_NAME} — tell me what you need.`,
+        suggestions: ["Plan my day", "What am I forgetting?", "Who's waiting on me?"],
+      });
+
     case "greeting": {
       const priorities = todaysPriorities(data, now, 3);
       return result({
         text:
           priorities.length > 0
-            ? `I'm here. You have ${pluralize(openTasks(data).length, "open item")} — the one I'd start with is "${priorities[0].title}".`
-            : "I'm here. Your board is clear, so tell me what you'd like to line up.",
+            ? `I'm ${ASSISTANT_NAME}. You have ${pluralize(openTasks(data).length, "open item")} — the one I'd start with is "${priorities[0].title}".`
+            : `I'm ${ASSISTANT_NAME}. Your board is clear, so tell me what you'd like to line up.`,
         suggestions: ["Plan my day", "What's important today?", "Create a task"],
       });
     }
@@ -515,14 +528,17 @@ export function runIntent(intent: Intent, data: AppData, now: Date): AssistantRe
     case "unknown":
     default:
       return result({
-        text: "I didn't quite catch what you need. Tell me what to capture, or ask me to look at your day.",
+        text: `I heard you. I'm ${ASSISTANT_NAME} — tell me what to capture, or ask me to look at your day.`,
         suggestions: DEFAULT_SUGGESTIONS,
       });
   }
 }
 
 export function respond(input: string, data: AppData, now: Date = new Date()): AssistantResult {
-  const outcome = runIntent(interpret(input, now), data, now);
+  const command = stripWakeWord(input);
+  const intent =
+    hasWakeWord(input) && !command ? ({ type: "wake" } as const) : interpret(command || input, now);
+  const outcome = runIntent(intent, data, now);
   return {
     ...outcome,
     suggestions: outcome.suggestions.length > 0 ? outcome.suggestions : DEFAULT_SUGGESTIONS.slice(0, 3),

@@ -46,7 +46,7 @@ export function Onboarding() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center px-5 py-10" style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}>
+    <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-5 py-8" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3">
           <LogoMark size={44} />
@@ -56,15 +56,15 @@ export function Onboarding() {
           </div>
         </div>
 
-        <h1 className="admin-heading-serif mt-7 text-[1.625rem] leading-tight text-white">
+        <h1 className="admin-heading-serif mt-4 text-[1.375rem] leading-tight text-white">
           {greetingFor(now)}. Let&apos;s set up your{" "}
           <span className="text-gold-gradient">command center</span>.
         </h1>
         <p className="mt-2.5 max-w-[20rem] text-[0.8125rem] leading-relaxed text-white/80">
-          I talk. You talk. I turn what you say into tasks, reminders, and memory — then I keep watch.
+          I talk. You talk. Say Core when you want me — I turn what you say into tasks, reminders, and memory.
         </p>
 
-        <Panel className="mt-7 p-5">
+        <Panel className="mt-4 p-4">
           <Eyebrow>Your profile</Eyebrow>
 
           <div className="mt-3.5">

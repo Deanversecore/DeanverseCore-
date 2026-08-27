@@ -57,7 +57,7 @@
   --admin-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   --app-topbar-height: calc(4rem + env(safe-area-inset-top, 0px));
-  --app-bottomnav-height: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+  --app-bottomnav-height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 @theme inline {
@@ -92,6 +92,10 @@
 html {
   background: var(--background);
   color-scheme: dark;
+  height: 100%;
+  overflow: hidden;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -99,7 +103,10 @@ body {
   color: var(--admin-text);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
 }
 
 /* Ambient light — the same emerald/gold wash used across the site */
@@ -209,8 +216,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1.125rem;
-  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #0a0a0a;
@@ -236,8 +243,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1.125rem;
-  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--admin-text-muted);
@@ -261,7 +268,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--admin-emerald) 22%, var(--admin-border-subtle));
   border-radius: 14px;
   padding: 0.75rem 1rem;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   box-shadow: inset 0 1px 0 #ffffff12;
   transition:
     border-color 0.2s,
@@ -325,6 +332,7 @@ select.admin-input option {
 /* -------------------------------- Nav shell ------------------------------ */
 
 .app-bottomnav {
+  flex-shrink: 0;
   background: linear-gradient(#0f1a17fa 0%, #0a1210fc 100%);
   border-top: 1px solid #6f8f722e;
   box-shadow:
@@ -332,7 +340,7 @@ select.admin-input option {
     0 -24px 64px -12px #0000008c;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  padding-bottom: max(0.2rem, env(safe-area-inset-bottom));
 }
 
 .app-topbar {
@@ -513,15 +521,27 @@ select.admin-input option {
   }
 }
 
-@media (max-height: 720px) {
+@media (max-height: 760px) {
   .voice-orb-stage {
-    width: 10.25rem;
-    height: 10.25rem;
+    width: 9.5rem;
+    height: 9.5rem;
   }
 
   .voice-orb {
-    width: 6rem;
-    height: 6rem;
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+}
+
+@media (max-height: 640px) {
+  .voice-orb-stage {
+    width: 7.5rem;
+    height: 7.5rem;
+  }
+
+  .voice-orb {
+    width: 4.5rem;
+    height: 4.5rem;
   }
 }
 

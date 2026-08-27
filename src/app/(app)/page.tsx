@@ -25,19 +25,19 @@ export default function HomePage() {
   if (!mounted || !hydrated) return <DashboardSkeleton />;
 
   return (
-    <div className="pb-6">
+    <div className="pb-4">
       <HomeHeader name={data.profile.name} now={now} />
 
-      <div className="mt-5 flex flex-col gap-7 px-4">
-        <BriefingCard data={data} now={now} />
+      <div className="mt-3 flex flex-col gap-4 px-4">
+        <QuickActions />
         <NextActionCard data={data} now={now} />
+        <BriefingCard data={data} now={now} />
         <InsightStack data={data} now={now} />
         <PrioritiesSection data={data} now={now} />
         <ScheduleSection data={data} now={now} />
         <RemindersSection data={data} now={now} />
         <FollowUpsSection data={data} />
         <RoutinesSection data={data} now={now} />
-        <QuickActions />
       </div>
     </div>
   );

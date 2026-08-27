@@ -45,7 +45,7 @@ export function InsightStack({ data, now }: { data: AppData; now: Date }) {
 
   return (
     <section aria-label="Assistant signals">
-      <Eyebrow className="mb-2.5 px-1">Your assistant noticed</Eyebrow>
+      <Eyebrow className="mb-2.5 px-1">Core noticed</Eyebrow>
       <div className="flex flex-col gap-2.5">
         <AnimatePresence initial={false}>
           {insights.map((insight, index) => (

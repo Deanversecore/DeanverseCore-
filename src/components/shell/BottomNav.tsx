@@ -21,10 +21,10 @@ export function BottomNav() {
 
   return (
     <nav
-      className="app-bottomnav fixed inset-x-0 bottom-0 z-40"
+      className="app-bottomnav relative z-40 shrink-0"
       aria-label="Primary"
     >
-      <ul className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-1.5">
+      <ul className="mx-auto flex max-w-lg items-stretch justify-around px-1 pt-1">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
@@ -36,7 +36,7 @@ export function BottomNav() {
                   if (href === "/ai") unlockAudioPlayback();
                 }}
                 aria-current={active ? "page" : undefined}
-                className="relative flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-2xl px-1 py-1.5"
+                className="relative flex min-h-[2.85rem] flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1"
               >
                 {active ? (
                   <motion.span
